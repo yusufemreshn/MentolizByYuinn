@@ -1,0 +1,189 @@
+@model OgretmenRaporuViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Ogrenci.AdSoyad} - Öğretmen Raporu";
+    Layout = "_RaporLayout";
+}
+
+<div class="rp-rapor-baslik">
+    <div>
+        <h1>@Model.Ogrenci.AdSoyad</h1>
+        <div class="text-body-secondary">
+            @(Model.Ogrenci.SinifAdi ?? "Sınıfsız")
+            @(string.IsNullOrWhiteSpace(Model.Ogrenci.OgrenciNo) ? "" : $"· Öğrenci No: {Model.Ogrenci.OgrenciNo}")
+        </div>
+    </div>
+    <div class="rp-rapor-tarih">
+        Öğretmen Raporu<br />
+        @Model.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")
+    </div>
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Net Gelişimi</h2>
+    @if (Model.DenemeAnalizi.NetGelisimi.Count == 0)
+    {
+        <p class="text-body-secondary small">Henüz deneme sonucu girilmemiş.</p>
+    }
+    else
+    {
+        <canvas id="net-gelisimi-grafigi" height="90"></canvas>
+        <script type="application/json" id="net-gelisimi-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DenemeAnalizi.NetGelisimi.Select(n => new { etiket = n.DenemeAdi, net = n.ToplamNet })))</script>
+    }
+</div>
+
+@if (Model.DenemeAnalizi.SonDenemeDersNetleri.Count > 0)
+{
+    <div class="rp-rapor-bolum">
+        <h2>Ders Bazlı Netler ve Zayıf Alanlar</h2>
+        @if (Model.DenemeAnalizi.ZayifAlanlar.Count > 0)
+        {
+            <p class="small mb-2">Zayıf alanlar: <strong>@string.Join(", ", Model.DenemeAnalizi.ZayifAlanlar)</strong></p>
+        }
+        <table>
+            <thead>
+                <tr>
+                    <th>Ders</th>
+                    <th>Net</th>
+                    <th>Soru Sayısı</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ders in Model.DenemeAnalizi.SonDenemeDersNetleri)
+                {
+                    <tr>
+                        <td>@ders.DersAdi</td>
+                        <td>@ders.Net.ToString("0.##")</td>
+                        <td>@ders.SoruSayisi</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="rp-rapor-bolum">
+    <h2>Ödev Tamamlama Oranı</h2>
+    <div class="rp-rapor-ozet-grid">
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Toplam Ödev</div>
+            <div class="deger">@Model.OdevOzeti.ToplamOdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Tamamlanan</div>
+            <div class="deger">@Model.OdevOzeti.TamamlananOdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Geciken</div>
+            <div class="deger">@Model.OdevOzeti.GecikenOdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Tamamlama Oranı</div>
+            <div class="deger">%@Model.OdevOzeti.TamamlamaOrani</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.KonuIlerlemeleri.Count > 0)
+{
+    <div class="rp-rapor-bolum">
+        <h2>Konu Takip İlerlemesi</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ders</th>
+                    <th>Tamamlanan</th>
+                    <th>İlerleme</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ilerleme in Model.KonuIlerlemeleri)
+                {
+                    <tr>
+                        <td>@ilerleme.DersAdi</td>
+                        <td>@ilerleme.TamamlananKonuSayisi / @ilerleme.ToplamKonuSayisi</td>
+                        <td style="width: 35%;">
+                            <div class="rp-rapor-ilerleme-cubugu"><div style="width: @(ilerleme.IlerlemeYuzdesi)%;"></div></div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (Model.HedefKarsilastirma is not null && Model.HedefKarsilastirma.DersKarsilastirmalari.Count > 0)
+{
+    <div class="rp-rapor-bolum">
+        <h2>Hedefe Uzaklık</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ders</th>
+                    <th>Hedef Net</th>
+                    <th>Güncel Net</th>
+                    <th>Uzaklık</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var karsilastirma in Model.HedefKarsilastirma.DersKarsilastirmalari)
+                {
+                    <tr>
+                        <td>@karsilastirma.DersAdi</td>
+                        <td>@karsilastirma.HedefNet.ToString("0.##")</td>
+                        <td>@(karsilastirma.GuncelNet?.ToString("0.##") ?? "-")</td>
+                        <td>@(karsilastirma.Uzaklik?.ToString("0.##") ?? "-")</td>
+                    </tr>
+                }
+                <tr class="fw-semibold">
+                    <td>Toplam</td>
+                    <td>@Model.HedefKarsilastirma.ToplamHedefNet.ToString("0.##")</td>
+                    <td>@(Model.HedefKarsilastirma.ToplamGuncelNet?.ToString("0.##") ?? "-")</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="rp-rapor-bolum">
+    <h2>Görüşme Özetleri</h2>
+    @if (Model.Gorusmeler.Count == 0)
+    {
+        <p class="text-body-secondary small">Henüz görüşme kaydı yok.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Tür</th>
+                    <th>Konu</th>
+                    <th>Notlar</th>
+                    <th>Alınan Karar</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gorusme in Model.Gorusmeler)
+                {
+                    <tr>
+                        <td>@gorusme.Tarih.ToString("dd.MM.yyyy")</td>
+                        <td>@gorusme.Tur.GosterimAdi()</td>
+                        <td>@gorusme.Konu</td>
+                        <td>@gorusme.Notlar</td>
+                        <td>@(gorusme.AlinanKarar ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@section Scripts {
+    @if (Model.DenemeAnalizi.NetGelisimi.Count > 0)
+    {
+        <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+        <script src="~/js/rapor-grafik.js" asp-append-version="true"></script>
+    }
+}

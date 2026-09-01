@@ -1,0 +1,56 @@
+@model (int Index, Mentoliz.Business.Dto.Ogrenci.VeliKaydetDTO Veli)
+
+@{
+    // şablon satırında gerçek bir index yok, javascript satırı kopyalarken __index__ yerine gerçek sırayı yazacak
+    var indexMetni = Model.Index == -1 ? "__index__" : Model.Index.ToString();
+    var veli = Model.Veli;
+}
+
+<div class="rp-kart veli-satiri" style="background-color: var(--rp-arkaplan);">
+    <input type="hidden" name="Ogrenci.Veliler[@indexMetni].Id" value="@veli.Id" />
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Yakınlık</label>
+            <select name="Ogrenci.Veliler[@indexMetni].Yakinlik" class="form-select">
+                @foreach (var deger in Enum.GetValues<Yakinlik>())
+                {
+                    if (deger == veli.Yakinlik)
+                    {
+                        <option value="@deger" selected>@deger.GosterimAdi()</option>
+                    }
+                    else
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Ad</label>
+            <input name="Ogrenci.Veliler[@indexMetni].Ad" value="@veli.Ad" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Soyad</label>
+            <input name="Ogrenci.Veliler[@indexMetni].Soyad" value="@veli.Soyad" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Telefon</label>
+            <input name="Ogrenci.Veliler[@indexMetni].Telefon" value="@veli.Telefon" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Eposta</label>
+            <input name="Ogrenci.Veliler[@indexMetni].Eposta" value="@veli.Eposta" class="form-control" />
+        </div>
+        <div class="col-md-1 form-check">
+            <input type="checkbox" name="Ogrenci.Veliler[@indexMetni].BirincilIletisimMi" value="true" class="form-check-input" checked="@(veli.BirincilIletisimMi ? "checked" : null)" />
+            <label class="form-check-label small">Birincil</label>
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-sm btn-outline-danger veli-sil-butonu"><i class="bi bi-trash"></i></button>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Meslek</label>
+            <input name="Ogrenci.Veliler[@indexMetni].Meslek" value="@veli.Meslek" class="form-control" />
+        </div>
+    </div>
+</div>

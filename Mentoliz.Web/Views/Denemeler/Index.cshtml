@@ -1,0 +1,50 @@
+@model DenemeListeViewModel
+
+@{
+    ViewData["Title"] = "Denemeler";
+}
+
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <a asp-action="Analiz" class="btn btn-outline-secondary"><i class="bi bi-bar-chart"></i> Alan Bazlı Analiz</a>
+    <a asp-action="Ekle" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Yeni Deneme</a>
+</div>
+
+@if (Model.Denemeler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-clipboard-data", Mesaj = "Henüz deneme eklenmemiş." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Deneme Adı</th>
+                    <th>Sınav Türü</th>
+                    <th>Tarih</th>
+                    <th>Katılımcı</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var deneme in Model.Denemeler)
+                {
+                    <tr>
+                        <td><a asp-action="Detay" asp-route-id="@deneme.Id">@deneme.Ad</a></td>
+                        <td>@deneme.SinavTuruAdi</td>
+                        <td>@deneme.Tarih.ToString("dd.MM.yyyy")</td>
+                        <td>@deneme.KatilimciSayisi</td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@deneme.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@deneme.Id" method="post" class="d-inline" data-onay="Bu denemeyi silmek istediğinize emin misiniz? Bağlı tüm sonuç kayıtları da silinir.">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

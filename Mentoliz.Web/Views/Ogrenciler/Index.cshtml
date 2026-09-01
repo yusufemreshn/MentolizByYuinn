@@ -1,0 +1,85 @@
+@model OgrenciListeViewModel
+
+@{
+    ViewData["Title"] = "Öğrenciler";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Ara</label>
+            <input type="text" name="arama" value="@Model.Arama" class="form-control" placeholder="Ad, soyad veya öğrenci no" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Sınıf</label>
+            <select name="sinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad", Model.SinifId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Durum</label>
+            <select name="aktifMi" class="form-select" asp-items="@(new SelectList(new[] { new { Deger = "true", Ad = "Aktif" }, new { Deger = "false", Ad = "Ayrılmış" } }, "Deger", "Ad", Model.AktifMi?.ToString().ToLowerInvariant()))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filtrele</button>
+            <a asp-action="Ekle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-plus-lg"></i> Ekle</a>
+        </div>
+    </form>
+</div>
+
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="CsvDisaAktar" asp-route-arama="@Model.Arama" asp-route-sinifId="@Model.SinifId" asp-route-aktifMi="@Model.AktifMi" class="btn btn-outline-secondary btn-sm"><i class="bi bi-download"></i> CSV İndir</a>
+</div>
+
+@if (Model.Ogrenciler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-people", Mesaj = "Aramanıza uyan öğrenci bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Ad Soyad</th>
+                    <th>Öğrenci No</th>
+                    <th>Sınıf</th>
+                    <th>Telefon</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ogrenci in Model.Ogrenciler)
+                {
+                    <tr>
+                        <td><a asp-action="Detay" asp-route-id="@ogrenci.Id">@ogrenci.AdSoyad</a></td>
+                        <td>@(ogrenci.OgrenciNo ?? "-")</td>
+                        <td>@(ogrenci.SinifAdi ?? "-")</td>
+                        <td>@(ogrenci.Telefon ?? "-")</td>
+                        <td>
+                            @if (ogrenci.AktifMi)
+                            {
+                                <span class="rp-rozet rp-rozet-basari">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="rp-rozet rp-rozet-notr">Ayrılmış</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@ogrenci.Id" method="post" class="d-inline" data-onay="Bu öğrenciyi silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,45 @@
+@model KonuFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Konu.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Konu Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Ders</label>
+                <select asp-for="Konu.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Ders seçin</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Konu Adı</label>
+                <input asp-for="Konu.Ad" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Seviye</label>
+                <select asp-for="Konu.Seviye" class="form-select">
+                    @foreach (var deger in Enum.GetValues<KonuSeviyesi>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sıra</label>
+                <input asp-for="Konu.Sira" type="number" min="1" class="form-control" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div class="form-check">
+                    <input asp-for="Konu.AktifMi" class="form-check-input" />
+                    <label class="form-check-label" asp-for="Konu.AktifMi">Aktif konu</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

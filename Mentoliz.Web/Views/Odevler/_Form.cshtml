@@ -1,0 +1,70 @@
+@model OdevFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Odev.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Ödev Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Öğrenci</label>
+                <select asp-for="Odev.OgrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad"))">
+                    <option value="">Öğrenci seçin</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Ders</label>
+                <select asp-for="Odev.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Ders seçin</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Konu Başlığı</label>
+                <input asp-for="Odev.KonuBasligi" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Kaynak Adı</label>
+                <input asp-for="Odev.KaynakAdi" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Veriliş Tarihi</label>
+                <input asp-for="Odev.VerilisTarihi" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Son Teslim Tarihi</label>
+                <input asp-for="Odev.SonTeslimTarihi" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Toplam Soru Sayısı</label>
+                <input asp-for="Odev.ToplamSoruSayisi" type="number" min="1" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Tamamlanan Soru Sayısı</label>
+                <input asp-for="Odev.TamamlananSoruSayisi" type="number" min="0" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Durum</label>
+                <select asp-for="Odev.Durum" class="form-select">
+                    @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Yapılma Tarihi</label>
+                <input asp-for="Odev.YapilmaTarihi" type="date" class="form-control" />
+                <div class="form-text">Ödev henüz yapılmadıysa boş bırakın.</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Açıklama</label>
+                <textarea asp-for="Odev.Aciklama" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

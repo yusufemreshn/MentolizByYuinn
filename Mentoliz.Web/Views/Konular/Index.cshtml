@@ -1,0 +1,74 @@
+@model KonuListeViewModel
+
+@{
+    ViewData["Title"] = "Konular";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Ders</label>
+            <select name="dersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad", Model.DersId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filtrele</button>
+            <a asp-action="Ekle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-plus-lg"></i> Ekle</a>
+        </div>
+        <div class="col-md-3 ms-auto text-end">
+            <a asp-action="Takip" class="btn btn-outline-primary"><i class="bi bi-grid-3x3-gap"></i> Konu Takip Haritası</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.Konular.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-book", Mesaj = "Aramanıza uyan konu bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Konu</th>
+                    <th>Ders</th>
+                    <th>Seviye</th>
+                    <th>Sıra</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var konu in Model.Konular)
+                {
+                    <tr>
+                        <td>@konu.Ad</td>
+                        <td>@konu.DersAdi</td>
+                        <td>@konu.Seviye.GosterimAdi()</td>
+                        <td>@konu.Sira</td>
+                        <td>
+                            @if (konu.AktifMi)
+                            {
+                                <span class="rp-rozet rp-rozet-basari">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="rp-rozet rp-rozet-notr">Pasif</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@konu.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@konu.Id" method="post" class="d-inline" data-onay="Bu konuyu silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,700 @@
+@model OgrenciDetayViewModel
+
+@{
+    ViewData["Title"] = Model.Ogrenci.AdSoyad;
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h2 class="h5 mb-1">@Model.Ogrenci.AdSoyad</h2>
+        <div class="text-body-secondary small">
+            @(Model.Ogrenci.SinifAdi ?? "Sınıfsız")
+            @if (Model.Ogrenci.AktifMi)
+            {
+                <span class="rp-rozet rp-rozet-basari ms-1">Aktif</span>
+            }
+            else
+            {
+                <span class="rp-rozet rp-rozet-notr ms-1">Ayrılmış</span>
+            }
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-printer"></i> Rapor</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" asp-action="OgretmenRaporu" asp-route-id="@Model.Ogrenci.Id">Öğretmen Raporu</a></li>
+                <li><a class="dropdown-item" asp-action="VeliRaporu" asp-route-id="@Model.Ogrenci.Id">Veli Raporu</a></li>
+                <li><a class="dropdown-item" asp-action="DonemRaporu" asp-route-id="@Model.Ogrenci.Id">Dönem Sonu Raporu</a></li>
+            </ul>
+        </div>
+        <a asp-action="Duzenle" asp-route-id="@Model.Ogrenci.Id" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Düzenle</a>
+    </div>
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sekme-zaman-tuneli" type="button">Zaman Tüneli</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-genel" type="button">Genel Bilgiler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-veliler" type="button">Veliler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-program" type="button">Ders Programı</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-odevler" type="button">Ödevler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-denemeler" type="button">Deneme Sonuçları</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-gorusmeler" type="button">Görüşmeler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-hedefler" type="button">Hedefler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-calisma" type="button">Çalışma Programı</button></li>
+    <li class="nav-item"><button id="konu-takip-sekme-dugmesi" class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-konu" type="button">Konu Takip</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-tercihler" type="button">Tercihler</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="sekme-zaman-tuneli">
+        @if (Model.ZamanTuneli.Count == 0)
+        {
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-clock-history", Mesaj = "Bu öğrenci için henüz kaydedilmiş bir hareket yok." })" /></div>
+        }
+        else
+        {
+            <div class="rp-zaman-tuneli">
+                @foreach (var oge in Model.ZamanTuneli)
+                {
+                    <div class="rp-zaman-tuneli-oge">
+                        <div class="rp-zaman-tuneli-ikon"><i class="bi @ZamanTuneliGorunumOlusturucu.Ikon(oge.Tur)"></i></div>
+                        <div class="rp-zaman-tuneli-govde">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <span class="fw-semibold">@oge.Baslik</span>
+                                <span class="text-body-secondary small text-nowrap">@oge.Tarih.ToString("dd.MM.yyyy")</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <span class="rp-rozet rp-rozet-notr">@ZamanTuneliGorunumOlusturucu.Etiket(oge.Tur)</span>
+                                @if (!string.IsNullOrWhiteSpace(oge.Aciklama))
+                                {
+                                    <span class="text-body-secondary small">@oge.Aciklama</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-genel">
+        <div class="rp-kart">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Öğrenci No</dt>
+                <dd class="col-sm-9">@(Model.Ogrenci.OgrenciNo ?? "-")</dd>
+                <dt class="col-sm-3">Telefon</dt>
+                <dd class="col-sm-9">@(Model.Ogrenci.Telefon ?? "-")</dd>
+                <dt class="col-sm-3">Doğum Tarihi</dt>
+                <dd class="col-sm-9">@(Model.Ogrenci.DogumTarihi?.ToString("dd.MM.yyyy") ?? "-")</dd>
+                <dt class="col-sm-3">Cinsiyet</dt>
+                <dd class="col-sm-9">@Model.Ogrenci.Cinsiyet.GosterimAdi()</dd>
+                <dt class="col-sm-3">Alan</dt>
+                <dd class="col-sm-9">@Model.Ogrenci.Alan.GosterimAdi()</dd>
+                <dt class="col-sm-3">Okul</dt>
+                <dd class="col-sm-9">@(Model.Ogrenci.OkulAdi ?? "-")</dd>
+                <dt class="col-sm-3">Kayıt Tarihi</dt>
+                <dd class="col-sm-9">@Model.Ogrenci.KayitTarihi.ToString("dd.MM.yyyy")</dd>
+                <dt class="col-sm-3">Notlar</dt>
+                <dd class="col-sm-9">@(Model.Ogrenci.GenelNotlar ?? "-")</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="sekme-veliler">
+        <div class="rp-kart">
+            @if (Model.Ogrenci.Veliler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-person-heart", Mesaj = "Kayıtlı veli yok." })" />
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var veli in Model.Ogrenci.Veliler)
+                    {
+                        <div class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <div class="fw-semibold">@veli.Ad @veli.Soyad <span class="text-body-secondary fw-normal">(@veli.Yakinlik.GosterimAdi())</span></div>
+                                <div class="text-body-secondary small">@veli.Telefon @(string.IsNullOrWhiteSpace(veli.Eposta) ? "" : "· " + veli.Eposta)</div>
+                            </div>
+                            @if (veli.BirincilIletisimMi)
+                            {
+                                <span class="rp-rozet rp-rozet-basari">Birincil</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="sekme-program">
+        @{
+            var programSaatleri = Model.BirlesikProgram.Select(s => s.BaslangicSaati).Distinct().OrderBy(s => s).ToList();
+            var gunler = Enum.GetValues<Gun>();
+        }
+
+        <h3 class="h6 mb-3">Birleşik Haftalık Program</h3>
+        @if (programSaatleri.Count == 0)
+        {
+            <div class="rp-kart mb-4">
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar3", Mesaj = "Bu öğrenci için henüz bir program yok, önce bir sınıfa atayın veya istisna ekleyin." })" />
+            </div>
+        }
+        else
+        {
+            <div class="rp-tablo-sarici mb-4">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Saat</th>
+                            @foreach (var gun in gunler)
+                            {
+                                <th>@gun.GosterimAdi()</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var saat in programSaatleri)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@saat.ToString(@"hh\:mm")</td>
+                                @foreach (var gun in gunler)
+                                {
+                                    var satir = Model.BirlesikProgram.FirstOrDefault(s => s.Gun == gun && s.BaslangicSaati == saat);
+                                    <td>
+                                        @if (satir is not null)
+                                        {
+                                            <div class="small">
+                                                <div class="fw-semibold">@(string.IsNullOrWhiteSpace(satir.DersAdi) ? (satir.Tur?.GosterimAdi() ?? "Ders") : satir.DersAdi)</div>
+                                                <div class="text-body-secondary">@satir.BaslangicSaati.ToString(@"hh\:mm")-@satir.BitisSaati.ToString(@"hh\:mm")</div>
+                                                @if (!string.IsNullOrWhiteSpace(satir.OgretmenAdi))
+                                                {
+                                                    <div class="text-body-secondary">@satir.OgretmenAdi</div>
+                                                }
+                                                <span class="rp-rozet @(satir.Tur.HasValue ? "rp-rozet-uyari" : "rp-rozet-notr")">
+                                                    @(satir.Tur.HasValue ? satir.Tur.Value.GosterimAdi() : "Sınıf Programı")
+                                                </span>
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <h3 class="h6 mb-3">Haftalık Kurumda Bulunma Süresi</h3>
+            <div class="rp-tablo-sarici mb-4">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Gün</th>
+                            <th>Giriş</th>
+                            <th>Çıkış</th>
+                            <th>Toplam Süre</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var gunSuresi in Model.HaftalikBulunmaSuresi.Where(g => g.GirisSaati.HasValue))
+                        {
+                            <tr>
+                                <td>@gunSuresi.Gun.GosterimAdi()</td>
+                                <td>@gunSuresi.GirisSaati!.Value.ToString(@"hh\:mm")</td>
+                                <td>@gunSuresi.CikisSaati!.Value.ToString(@"hh\:mm")</td>
+                                <td>@((int)gunSuresi.ToplamSure.TotalHours) sa @(gunSuresi.ToplamSure.Minutes) dk</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h6 mb-0">Program İstisnaları</h3>
+            <a asp-action="IstisnaEkle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> İstisna Ekle</a>
+        </div>
+        @if (Model.Istisnalar.Count == 0)
+        {
+            <div class="rp-kart mb-4">
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-plus", Mesaj = "Kayıtlı program istisnası yok." })" />
+            </div>
+        }
+        else
+        {
+            <div class="rp-tablo-sarici mb-4">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Gün</th>
+                            <th>Saat</th>
+                            <th>Tür</th>
+                            <th>Ders</th>
+                            <th>Öğretmen</th>
+                            <th>Tarih Aralığı</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var istisna in Model.Istisnalar)
+                        {
+                            <tr>
+                                <td>@istisna.Gun.GosterimAdi()</td>
+                                <td>@istisna.BaslangicSaati.ToString(@"hh\:mm")-@istisna.BitisSaati.ToString(@"hh\:mm")</td>
+                                <td>@istisna.Tur.GosterimAdi()</td>
+                                <td>@(istisna.DersAdi ?? "-")</td>
+                                <td>@(istisna.OgretmenAdi ?? "-")</td>
+                                <td>
+                                    @if (istisna.BaslangicTarihi.HasValue || istisna.BitisTarihi.HasValue)
+                                    {
+                                        @($"{istisna.BaslangicTarihi?.ToString("dd.MM.yyyy") ?? "-"} / {istisna.BitisTarihi?.ToString("dd.MM.yyyy") ?? "-"}")
+                                    }
+                                    else
+                                    {
+                                        @:Süresiz
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="IstisnaDuzenle" asp-route-id="@istisna.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="IstisnaSil" asp-route-id="@istisna.Id" asp-route-ogrenciId="@Model.Ogrenci.Id" method="post" class="d-inline" data-onay="Bu program istisnasını silmek istediğinize emin misiniz?">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+    </div>
+    <div class="tab-pane fade" id="sekme-odevler">
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="rp-kart text-center">
+                    <div class="text-body-secondary small">Toplam Ödev</div>
+                    <div class="h4 mb-0">@Model.OdevOzeti.ToplamOdevSayisi</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="rp-kart text-center">
+                    <div class="text-body-secondary small">Tamamlanan</div>
+                    <div class="h4 mb-0">@Model.OdevOzeti.TamamlananOdevSayisi</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="rp-kart text-center">
+                    <div class="text-body-secondary small">Geciken</div>
+                    <div class="h4 mb-0">@Model.OdevOzeti.GecikenOdevSayisi</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="rp-kart text-center">
+                    <div class="text-body-secondary small">Tamamlama Oranı</div>
+                    <div class="h4 mb-0">%@Model.OdevOzeti.TamamlamaOrani</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="h6 mb-0">Ödev Listesi</h3>
+            <a asp-controller="Odevler" asp-action="Ekle" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Ödev Ekle</a>
+        </div>
+        @if (Model.Odevler.Count == 0)
+        {
+            <div class="rp-kart">
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-text", Mesaj = "Kayıtlı ödev yok." })" />
+            </div>
+        }
+        else
+        {
+            <div class="rp-tablo-sarici">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ders</th>
+                            <th>Konu</th>
+                            <th>Veriliş</th>
+                            <th>Son Teslim</th>
+                            <th>Durum</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var odev in Model.Odevler)
+                        {
+                            var rozetSinifi = odev.Durum switch
+                            {
+                                OdevDurumu.Tamamlandi => "rp-rozet-basari",
+                                OdevDurumu.Gecikti => "rp-rozet-tehlike",
+                                OdevDurumu.EksikTamamlandi => "rp-rozet-uyari",
+                                OdevDurumu.Yapilmadi => "rp-rozet-tehlike",
+                                _ => "rp-rozet-notr"
+                            };
+
+                            <tr>
+                                <td>@odev.DersAdi</td>
+                                <td>@odev.KonuBasligi</td>
+                                <td>@odev.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <form asp-controller="Odevler" asp-action="DurumGuncelle" asp-route-id="@odev.Id" asp-route-donusUrl="@(Url.Action("Detay", "Ogrenciler", new { id = Model.Ogrenci.Id }) + "#sekme-odevler")" method="post">
+                                        <select name="yeniDurum" class="form-select form-select-sm rp-rozet-secim @rozetSinifi" onchange="this.form.submit()">
+                                            @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                                            {
+                                                if (deger == odev.Durum)
+                                                {
+                                                    <option value="@deger" selected>@deger.GosterimAdi()</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@deger">@deger.GosterimAdi()</option>
+                                                }
+                                            }
+                                        </select>
+                                    </form>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-controller="Odevler" asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-denemeler">
+        @if (Model.KatildigiSinavTurleri.Count == 0)
+        {
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-clipboard-data", Mesaj = "Bu öğrencinin henüz deneme sonucu yok." })" /></div>
+        }
+        else
+        {
+            <ul class="nav nav-pills mb-3">
+                @foreach (var tur in Model.KatildigiSinavTurleri)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @(tur.Id == Model.SeciliSinavTuruId ? "active" : "")" href="@Url.Action("Detay", new { id = Model.Ogrenci.Id, sinavTuruId = tur.Id })#sekme-denemeler" data-sekme-hedefi="sekme-denemeler">@tur.Ad</a>
+                    </li>
+                }
+            </ul>
+
+            @if (Model.DenemeAnalizi.NetGelisimi.Count == 0)
+            {
+                <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-clipboard-data", Mesaj = "Bu sınav türünde henüz sonuç yok." })" /></div>
+            }
+            else
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="rp-kart text-center">
+                            <div class="text-body-secondary small">Son Deneme Neti</div>
+                            <div class="h4 mb-0">@Model.DenemeAnalizi.SonDenemeToplamNet?.ToString("0.##")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="rp-kart text-center">
+                            <div class="text-body-secondary small">Sınıf Ortalaması</div>
+                            <div class="h4 mb-0">@(Model.DenemeAnalizi.SinifOrtalamasi?.ToString("0.##") ?? "-")</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="rp-kart text-center">
+                            <div class="text-body-secondary small">Kurum Sıralaması</div>
+                            <div class="h4 mb-0">@Model.DenemeAnalizi.KurumSiralamasi / @Model.DenemeAnalizi.ToplamKatilimci</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="rp-kart text-center">
+                            <div class="text-body-secondary small">Zayıf Alan</div>
+                            <div class="h6 mb-0 mt-2">@(Model.DenemeAnalizi.ZayifAlanlar.Count == 0 ? "-" : string.Join(", ", Model.DenemeAnalizi.ZayifAlanlar))</div>
+                            @if (Model.DenemeAnalizi.ZayifAlanlar.Count > 0)
+                            {
+                                <button type="button" class="btn btn-sm btn-link p-0 mt-1" onclick="document.getElementById('konu-takip-sekme-dugmesi').click()">İlgili konuları gör →</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-7">
+                        <div class="rp-kart">
+                            <h3 class="h6 mb-3">Net Gelişimi</h3>
+                            <canvas id="net-gelisimi-grafigi" height="220"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="rp-kart">
+                            <h3 class="h6 mb-3">Ders Bazlı Netler (@Model.DenemeAnalizi.SonDenemeAdi)</h3>
+                            <div style="height: 260px;">
+                                <canvas id="ders-netleri-grafigi"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.DenemeAnalizi.EnCokYukselenler.Count > 0 || Model.DenemeAnalizi.EnCokDusenler.Count > 0)
+                {
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="rp-kart">
+                                <h3 class="h6 mb-3">En Çok Yükselen Dersler</h3>
+                                @if (Model.DenemeAnalizi.EnCokYukselenler.Count == 0)
+                                {
+                                    <p class="text-body-secondary small mb-0">Yükselen ders yok.</p>
+                                }
+                                else
+                                {
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach (var degisim in Model.DenemeAnalizi.EnCokYukselenler)
+                                        {
+                                            <li class="d-flex justify-content-between border-bottom py-1">
+                                                <span>@degisim.DersAdi</span>
+                                                <span class="text-success fw-semibold">+@degisim.Degisim.ToString("0.##")</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="rp-kart">
+                                <h3 class="h6 mb-3">En Çok Düşen Dersler</h3>
+                                @if (Model.DenemeAnalizi.EnCokDusenler.Count == 0)
+                                {
+                                    <p class="text-body-secondary small mb-0">Düşen ders yok.</p>
+                                }
+                                else
+                                {
+                                    <ul class="list-unstyled mb-0">
+                                        @foreach (var degisim in Model.DenemeAnalizi.EnCokDusenler)
+                                        {
+                                            <li class="d-flex justify-content-between border-bottom py-1">
+                                                <span>@degisim.DersAdi</span>
+                                                <span class="text-danger fw-semibold">@degisim.Degisim.ToString("0.##")</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <script type="application/json" id="net-gelisimi-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DenemeAnalizi.NetGelisimi.Select(n => new { etiket = n.DenemeAdi, net = n.ToplamNet })))</script>
+                <script type="application/json" id="ders-netleri-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DenemeAnalizi.SonDenemeDersNetleri.Select(d => new { etiket = d.DersAdi, net = d.Net })))</script>
+            }
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-gorusmeler">
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-controller="Gorusmeler" asp-action="Ekle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Görüşme Ekle</a>
+        </div>
+        @if (Model.Gorusmeler.Count == 0)
+        {
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-chat-dots", Mesaj = "Kayıtlı görüşme yok." })" /></div>
+        }
+        else
+        {
+            <div class="d-flex flex-column gap-3">
+                @foreach (var gorusme in Model.Gorusmeler)
+                {
+                    <div class="rp-kart border-start border-4 border-primary">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="fw-semibold">@gorusme.Tarih.ToString("dd.MM.yyyy")</span>
+                                <span class="rp-rozet rp-rozet-notr ms-2">@gorusme.Tur.GosterimAdi()</span>
+                                @if (gorusme.Sure.HasValue)
+                                {
+                                    <span class="text-body-secondary small ms-2">@gorusme.Sure dk</span>
+                                }
+                            </div>
+                            <a asp-controller="Gorusmeler" asp-action="Duzenle" asp-route-id="@gorusme.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        </div>
+                        <div class="fw-semibold">@gorusme.Konu</div>
+                        <div class="text-body-secondary small mt-1">@gorusme.Notlar</div>
+                        @if (!string.IsNullOrWhiteSpace(gorusme.AlinanKarar))
+                        {
+                            <div class="small mt-2"><span class="fw-semibold">Alınan karar:</span> @gorusme.AlinanKarar</div>
+                        }
+                        @if (gorusme.SonrakiGorusmeTarihi.HasValue)
+                        {
+                            <div class="small mt-1"><span class="fw-semibold">Sonraki görüşme:</span> @gorusme.SonrakiGorusmeTarihi.Value.ToString("dd.MM.yyyy")</div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-hedefler">
+        @if (Model.AktifHedef is null)
+        {
+            <div class="d-flex justify-content-end mb-3">
+                <a asp-controller="Hedefler" asp-action="Ekle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Hedef Belirle</a>
+            </div>
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bullseye", Mesaj = "Bu öğrenci için henüz hedef belirlenmemiş." })" /></div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h3 class="h6 mb-1">@Model.AktifHedef.HedefUniversite</h3>
+                    <div class="text-body-secondary small">@Model.AktifHedef.HedefBolum · @Model.AktifHedef.PuanTuru.GosterimAdi()</div>
+                </div>
+                <a asp-controller="Hedefler" asp-action="Index" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary">Hedef Sayfasına Git</a>
+            </div>
+
+            @if (Model.HedefKarsilastirma is not null && Model.HedefKarsilastirma.DersKarsilastirmalari.Count > 0)
+            {
+                <div class="rp-tablo-sarici">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ders</th>
+                                <th>Hedef Net</th>
+                                <th>Güncel Net</th>
+                                <th>Uzaklık</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var karsilastirma in Model.HedefKarsilastirma.DersKarsilastirmalari)
+                            {
+                                <tr>
+                                    <td>@karsilastirma.DersAdi</td>
+                                    <td>@karsilastirma.HedefNet.ToString("0.##")</td>
+                                    <td>@(karsilastirma.GuncelNet?.ToString("0.##") ?? "-")</td>
+                                    <td>
+                                        @if (karsilastirma.Uzaklik.HasValue)
+                                        {
+                                            var pozitif = karsilastirma.Uzaklik.Value >= 0;
+                                            <span class="fw-semibold @(pozitif ? "text-success" : "text-danger")">@(pozitif ? "+" : "")@karsilastirma.Uzaklik.Value.ToString("0.##")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-body-secondary">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-calisma">
+        @if (Model.GuncelCalismaProgrami is null)
+        {
+            <div class="d-flex justify-content-end mb-3">
+                <a asp-controller="CalismaProgramlari" asp-action="Ekle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Program Oluştur</a>
+            </div>
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-week", Mesaj = "Bu öğrenci için henüz çalışma programı yok." })" /></div>
+        }
+        else
+        {
+            <div class="rp-kart">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="fw-semibold">Hafta başlangıcı @Model.GuncelCalismaProgrami.HaftaBaslangicTarihi.ToString("dd.MM.yyyy")</div>
+                        <div class="text-body-secondary small">@Model.GuncelCalismaProgrami.Satirlar.Count satır · Gerçekleşme %@Model.GuncelCalismaProgrami.GerceklesmeYuzdesi</div>
+                    </div>
+                    <a asp-controller="CalismaProgramlari" asp-action="Detay" asp-route-id="@Model.GuncelCalismaProgrami.Id" class="btn btn-sm btn-outline-primary">Programı Görüntüle</a>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-konu">
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-controller="Konular" asp-action="Takip" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-grid-3x3-gap"></i> Konu Takip Haritasına Git</a>
+        </div>
+        @if (Model.ZayifKonuOnerileri.Count > 0)
+        {
+            <div class="rp-kart mb-3">
+                <h3 class="h6 mb-3">Zayıf Alanlara Göre Önerilen Konular</h3>
+                <div class="text-body-secondary small mb-2">Son deneme sonuçlarında zayıf çıkan derslerden, henüz tamamlanmamış veya tekrar gereken konular.</div>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var oneri in Model.ZayifKonuOnerileri)
+                    {
+                        <span class="rp-rozet rp-rozet-uyari">@oneri.DersAdi · @oneri.Ad</span>
+                    }
+                </div>
+            </div>
+        }
+        @if (Model.KonuIlerlemeleri.Count == 0)
+        {
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-book", Mesaj = "Henüz konu tanımlı değil." })" /></div>
+        }
+        else
+        {
+            <div class="rp-kart">
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var ilerleme in Model.KonuIlerlemeleri)
+                    {
+                        <div>
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>@ilerleme.DersAdi</span>
+                                <span class="text-body-secondary">@ilerleme.TamamlananKonuSayisi / @ilerleme.ToplamKonuSayisi · %@ilerleme.IlerlemeYuzdesi</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: @(ilerleme.IlerlemeYuzdesi)%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="tab-pane fade" id="sekme-tercihler">
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-action="TercihEkle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Tercih Ekle</a>
+        </div>
+        @if (Model.Tercihler.Count == 0)
+        {
+            <div class="rp-kart"><partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-mortarboard", Mesaj = "Henüz tercih eklenmemiş." })" /></div>
+        }
+        else
+        {
+            <div class="rp-tablo-sarici">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sıra</th>
+                            <th>Üniversite</th>
+                            <th>Bölüm</th>
+                            <th>Taban Puan</th>
+                            <th>Notlar</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var tercih in Model.Tercihler)
+                        {
+                            <tr>
+                                <td>@tercih.Sira</td>
+                                <td>@tercih.UniversiteAdi</td>
+                                <td>@tercih.BolumAdi</td>
+                                <td>@(tercih.TabanPuan?.ToString("0.##") ?? "-")</td>
+                                <td>@(tercih.Notlar ?? "-")</td>
+                                <td class="text-end">
+                                    <a asp-action="TercihDuzenle" asp-route-id="@tercih.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <form asp-action="TercihSil" asp-route-id="@tercih.Id" asp-route-ogrenciId="@Model.Ogrenci.Id" method="post" class="d-inline" data-onay="Bu tercihi silmek istediğinize emin misiniz?">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.DenemeAnalizi.NetGelisimi.Count > 0)
+    {
+        <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+        <script src="~/js/ogrenci-deneme-analizi.js" asp-append-version="true"></script>
+    }
+}

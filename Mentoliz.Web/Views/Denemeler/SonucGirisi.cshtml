@@ -1,0 +1,117 @@
+@model SonucGirisiViewModel
+
+@{
+    ViewData["Title"] = "Sonuç Girişi";
+    var testler = Model.SinavTuru.Testler.OrderBy(t => t.Sira).ToList();
+}
+
+<div class="mb-3">
+    <h2 class="h5 mb-1">@Model.Deneme.Ad</h2>
+    <div class="text-body-secondary small">@Model.Deneme.SinavTuruAdi · @Model.Deneme.Tarih.ToString("dd.MM.yyyy")</div>
+</div>
+
+<div class="rp-kart mb-3">
+    <form method="get" class="row g-2 align-items-end">
+        <input type="hidden" name="denemeId" value="@Model.Deneme.Id" />
+        <div class="col-md-4">
+            <label class="form-label">Sınıf</label>
+            <select name="sinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad", Model.SinifId))">
+                <option value="">Sınıf seçin</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-primary w-100">Sınıfı Göster</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.SinifId.HasValue)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-people", Mesaj = "Sonuç girmek için önce bir sınıf seçin." })" />
+    </div>
+}
+else if (Model.Satirlar.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-people", Mesaj = "Bu sınıfta aktif öğrenci yok." })" />
+    </div>
+}
+else
+{
+    <form method="post" id="sonuc-girisi-formu" data-deneme-id="@Model.Deneme.Id" data-sinif-id="@Model.SinifId">
+        <input type="hidden" name="denemeId" value="@Model.Deneme.Id" />
+        <input type="hidden" name="sinifId" value="@Model.SinifId" />
+
+        <div class="mb-2 d-flex align-items-center gap-2">
+            <button type="button" id="onceki-denemeden-doldur" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-clock-history"></i> Önceki Denemeden Doldur
+            </button>
+            <span class="small text-body-secondary">Sadece hiç sonuç girilmemiş satırları doldurur, mevcut kayıtlara dokunmaz.</span>
+        </div>
+
+        <div class="rp-tablo-sarici mb-3">
+            <table class="table table-bordered align-middle mb-0" id="sonuc-girisi-tablosu">
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="align-middle">Öğrenci</th>
+                        @foreach (var test in testler)
+                        {
+                            <th colspan="3" class="text-center">@test.DersAdi <span class="text-body-secondary small">(@test.SoruSayisi soru)</span></th>
+                        }
+                        <th rowspan="2" class="align-middle text-center">Toplam Net</th>
+                        <th rowspan="2" class="align-middle text-center">Katılmadı</th>
+                    </tr>
+                    <tr>
+                        @foreach (var test in testler)
+                        {
+                            <th class="text-center small">D</th>
+                            <th class="text-center small">Y</th>
+                            <th class="text-center small">B</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (var i = 0; i < Model.Satirlar.Count; i++)
+                    {
+                        <tr data-satir="@i" data-ogrenci-id="@Model.Satirlar[i].OgrenciId">
+                            <td class="fw-semibold">@Model.Satirlar[i].OgrenciAdSoyad</td>
+                            <input type="hidden" asp-for="Satirlar[i].OgrenciAdSoyad" />
+                            <input type="hidden" asp-for="Satirlar[i].Sonuc.Id" class="satir-sonuc-id" />
+                            <input type="hidden" asp-for="Satirlar[i].Sonuc.DenemeId" />
+                            <input type="hidden" asp-for="Satirlar[i].Sonuc.OgrenciId" />
+                            @for (var j = 0; j < Model.Satirlar[i].Sonuc.Detaylar.Count; j++)
+                            {
+                                <input type="hidden" asp-for="Satirlar[i].Sonuc.Detaylar[j].Id" class="satir-detay-id" data-test-id="@Model.Satirlar[i].Sonuc.Detaylar[j].SinavTuruTestId" />
+                                <input type="hidden" asp-for="Satirlar[i].Sonuc.Detaylar[j].SinavTuruTestId" />
+                                <td style="width: 70px;">
+                                    <input asp-for="Satirlar[i].Sonuc.Detaylar[j].Dogru" type="number" min="0" class="form-control form-control-sm net-girdi" data-satir="@i" data-test-id="@Model.Satirlar[i].Sonuc.Detaylar[j].SinavTuruTestId" data-alan="dogru" />
+                                </td>
+                                <td style="width: 70px;">
+                                    <input asp-for="Satirlar[i].Sonuc.Detaylar[j].Yanlis" type="number" min="0" class="form-control form-control-sm net-girdi" data-satir="@i" data-test-id="@Model.Satirlar[i].Sonuc.Detaylar[j].SinavTuruTestId" data-alan="yanlis" />
+                                </td>
+                                <td style="width: 70px;">
+                                    <input asp-for="Satirlar[i].Sonuc.Detaylar[j].Bos" type="number" min="0" class="form-control form-control-sm net-girdi" data-satir="@i" data-test-id="@Model.Satirlar[i].Sonuc.Detaylar[j].SinavTuruTestId" data-alan="bos" />
+                                </td>
+                            }
+                            <td class="text-center fw-semibold">
+                                <span id="net-toplam-@i" data-net-toplam="@i">0</span>
+                                <span class="rp-satir-durum" id="satir-durum-@i"></span>
+                            </td>
+                            <td class="text-center">
+                                <input asp-for="Satirlar[i].Sonuc.KatilmadiMi" class="form-check-input" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Sonuçları Kaydet</button>
+        <a asp-action="Detay" asp-route-id="@Model.Deneme.Id" class="btn btn-outline-secondary">Vazgeç</a>
+    </form>
+}
+
+@section Scripts {
+    <script src="~/js/deneme-sonuc-girisi.js" asp-append-version="true"></script>
+}

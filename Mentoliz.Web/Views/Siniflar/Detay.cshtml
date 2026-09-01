@@ -1,0 +1,184 @@
+@model SinifDetayViewModel
+
+@{
+    ViewData["Title"] = Model.Sinif.Ad;
+    var saatler = Model.DersProgrami.Select(s => s.BaslangicSaati).Distinct().OrderBy(s => s).ToList();
+    var gunler = Enum.GetValues<Gun>();
+    var atanabilirOgrenciler = Model.AktifOgrenciler.Where(o => o.SinifId != Model.Sinif.Id).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h2 class="h5 mb-1">@Model.Sinif.Ad</h2>
+        <div class="text-body-secondary small">
+            @Model.Sinif.Seviye.GosterimAdi() · @Model.Sinif.Alan.GosterimAdi() · @Model.Sinif.OgrenciSayisi / @Model.Sinif.Kontenjan öğrenci
+            @if (Model.Sinif.AktifMi)
+            {
+                <span class="rp-rozet rp-rozet-basari ms-1">Aktif</span>
+            }
+            else
+            {
+                <span class="rp-rozet rp-rozet-notr ms-1">Pasif</span>
+            }
+        </div>
+    </div>
+    <a asp-action="Duzenle" asp-route-id="@Model.Sinif.Id" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Düzenle</a>
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sekme-genel" type="button">Genel Bilgiler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-ogrenciler" type="button">Öğrenciler</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#sekme-program" type="button">Ders Programı</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="sekme-genel">
+        <div class="rp-kart">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Sınıf Adı</dt>
+                <dd class="col-sm-9">@Model.Sinif.Ad</dd>
+                <dt class="col-sm-3">Seviye</dt>
+                <dd class="col-sm-9">@Model.Sinif.Seviye.GosterimAdi()</dd>
+                <dt class="col-sm-3">Alan</dt>
+                <dd class="col-sm-9">@Model.Sinif.Alan.GosterimAdi()</dd>
+                <dt class="col-sm-3">Kontenjan</dt>
+                <dd class="col-sm-9">@Model.Sinif.Kontenjan</dd>
+                <dt class="col-sm-3">Öğrenci Sayısı</dt>
+                <dd class="col-sm-9">@Model.Sinif.OgrenciSayisi</dd>
+            </dl>
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="sekme-ogrenciler">
+        <div class="rp-kart mb-3">
+            <h2 class="h6 mb-3">Sınıfa Öğrenci Ata</h2>
+            <form asp-action="OgrenciAta" method="post" class="row g-2 align-items-end">
+                <input type="hidden" name="sinifId" value="@Model.Sinif.Id" />
+                <div class="col-md-8">
+                    <select name="ogrenciId" class="form-select" required>
+                        <option value="">Öğrenci seçin</option>
+                        @foreach (var ogrenci in atanabilirOgrenciler)
+                        {
+                            <option value="@ogrenci.Id">@ogrenci.AdSoyad @(ogrenci.SinifAdi is null ? "" : $"({ogrenci.SinifAdi})")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">Ata</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="rp-kart">
+            @if (Model.SinifOgrencileri.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-people", Mesaj = "Bu sınıfta henüz öğrenci yok." })" />
+            }
+            else
+            {
+                <div class="rp-tablo-sarici">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ad Soyad</th>
+                                <th>Öğrenci No</th>
+                                <th>Durum</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ogrenci in Model.SinifOgrencileri)
+                            {
+                                <tr>
+                                    <td><a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@ogrenci.Id">@ogrenci.AdSoyad</a></td>
+                                    <td>@(ogrenci.OgrenciNo ?? "-")</td>
+                                    <td>
+                                        @if (ogrenci.AktifMi)
+                                        {
+                                            <span class="rp-rozet rp-rozet-basari">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="rp-rozet rp-rozet-notr">Ayrılmış</span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <form asp-action="OgrenciCikar" method="post" class="d-inline" data-onay="Bu öğrenciyi sınıftan çıkarmak istediğinize emin misiniz?">
+                                            <input type="hidden" name="sinifId" value="@Model.Sinif.Id" />
+                                            <input type="hidden" name="ogrenciId" value="@ogrenci.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-dash"></i> Sınıftan Çıkar</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="sekme-program">
+        <div class="d-flex justify-content-end mb-3">
+            <a asp-action="DersProgramiEkle" asp-route-sinifId="@Model.Sinif.Id" class="btn btn-outline-primary"><i class="bi bi-plus-lg"></i> Ders Saati Ekle</a>
+        </div>
+
+        @if (saatler.Count == 0)
+        {
+            <div class="rp-kart">
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar3", Mesaj = "Bu sınıf için henüz ders programı girilmemiş." })" />
+            </div>
+        }
+        else
+        {
+            <div class="rp-tablo-sarici">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Saat</th>
+                            @foreach (var gun in gunler)
+                            {
+                                <th>@gun.GosterimAdi()</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var saat in saatler)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@saat.ToString(@"hh\:mm")</td>
+                                @foreach (var gun in gunler)
+                                {
+                                    var satir = Model.DersProgrami.FirstOrDefault(s => s.Gun == gun && s.BaslangicSaati == saat);
+                                    <td>
+                                        @if (satir is not null)
+                                        {
+                                            <div class="small">
+                                                <div class="fw-semibold">@satir.DersAdi</div>
+                                                <div class="text-body-secondary">@satir.BaslangicSaati.ToString(@"hh\:mm")-@satir.BitisSaati.ToString(@"hh\:mm")</div>
+                                                @if (!string.IsNullOrWhiteSpace(satir.DerslikAdi))
+                                                {
+                                                    <div class="text-body-secondary">@satir.DerslikAdi</div>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(satir.OgretmenAdi))
+                                                {
+                                                    <div class="text-body-secondary">@satir.OgretmenAdi</div>
+                                                }
+                                                <div class="mt-1">
+                                                    <a asp-action="DersProgramiDuzenle" asp-route-id="@satir.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                                    <form asp-action="DersProgramiSil" asp-route-id="@satir.Id" asp-route-sinifId="@Model.Sinif.Id" method="post" class="d-inline" data-onay="Bu ders saatini silmek istediğinize emin misiniz?">
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,173 @@
+/* yazdırma raporları için hem ekran önizlemesi hem de baskı görünümü burada tanımlı */
+
+.rp-rapor-govde {
+  background-color: #e9ebef;
+}
+
+.rp-rapor-arac-cubugu {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--rp-yuzey);
+  border-bottom: 1px solid var(--rp-kenarlik);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* ekranda gerçek bir a4 sayfası gibi görünsün diye ortalanmış, gölgeli bir kutu kullanıyoruz */
+/* rapor kendi renk tokenlarını burada sabitliyor, aktif tema veya gece modu ne olursa olsun rapor hep aynı görünsün, aksi halde gece modunda açıklaştırılmış tema renkleri beyaz kağıtta soluk çıkıyordu */
+.rp-rapor-sayfa {
+  --rp-rapor-vurgu: #1b3a6b;
+  --rp-rapor-ikincil-metin: #5b6b82;
+  --rp-rapor-kenarlik: #e3e8ef;
+  max-width: 210mm;
+  margin: 2rem auto;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  padding: 18mm 16mm;
+  box-shadow: 0 4px 24px rgba(16, 24, 40, 0.12);
+}
+
+.rp-rapor-baslik {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--rp-rapor-vurgu);
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.rp-rapor-baslik h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 0.15rem;
+  color: var(--rp-rapor-vurgu);
+}
+
+.rp-rapor-baslik .text-body-secondary {
+  font-size: 0.85rem;
+}
+
+.rp-rapor-tarih {
+  font-size: 0.8rem;
+  color: var(--rp-rapor-ikincil-metin);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rp-rapor-bolum {
+  margin-bottom: 1.5rem;
+  break-inside: avoid;
+}
+
+.rp-rapor-bolum h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--rp-rapor-vurgu);
+  border-bottom: 1px solid var(--rp-rapor-kenarlik);
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.rp-rapor-bolum table {
+  width: 100%;
+  font-size: 0.88rem;
+}
+
+.rp-rapor-bolum table th {
+  text-align: left;
+  color: var(--rp-rapor-ikincil-metin);
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--rp-rapor-kenarlik);
+  padding: 0.4rem 0.5rem;
+}
+
+.rp-rapor-bolum table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--rp-rapor-kenarlik);
+}
+
+.rp-rapor-ozet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+
+.rp-rapor-ozet-kutu {
+  border: 1px solid var(--rp-rapor-kenarlik);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.9rem;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.rp-rapor-ozet-kutu .baslik {
+  font-size: 0.78rem;
+  color: var(--rp-rapor-ikincil-metin);
+  margin-bottom: 0.2rem;
+}
+
+.rp-rapor-ozet-kutu .deger {
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.rp-rapor-ilerleme-cubugu {
+  background-color: #eef0f3;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.rp-rapor-ilerleme-cubugu > div {
+  background-color: var(--rp-rapor-vurgu);
+  height: 100%;
+}
+
+.rp-rapor-yorum-alani {
+  border: 1px dashed var(--rp-rapor-kenarlik);
+  border-radius: 0.5rem;
+  min-height: 4rem;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--rp-rapor-ikincil-metin);
+}
+
+/* veli mesajı kutusu yazdırılan alanın dışında, ekranda ayrı bir kart gibi duruyor */
+.rp-veli-mesaji-kutusu {
+  max-width: 210mm;
+  margin: 0 auto;
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-md);
+  padding: 1rem 1.25rem;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .rp-rapor-govde {
+    background-color: #ffffff;
+  }
+
+  .rp-rapor-sayfa {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+}

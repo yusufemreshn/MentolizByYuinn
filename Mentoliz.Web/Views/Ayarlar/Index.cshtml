@@ -1,0 +1,149 @@
+@model AyarlarViewModel
+
+@{
+    ViewData["Title"] = "Ayarlar";
+}
+
+<div class="rp-kart mb-3">
+    <h2 class="h6 mb-3">Genel Ayarlar</h2>
+    <form method="post" asp-action="Kaydet" class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Kurum Adı</label>
+            <input asp-for="KurumAdi" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Öğretmen Adı</label>
+            <input asp-for="OgretmenAdi" class="form-control" />
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">Yedekleme Klasörü</label>
+            <input asp-for="YedekKlasoru" class="form-control" placeholder="Örn: D:\MentolizYedekleri" />
+            <div class="form-text">Yedekler bu klasöre tarih damgalı dosyalar olarak kaydedilir.</div>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+                <input asp-for="KapanistaOtomatikYedek" type="checkbox" class="form-check-input" />
+                <label asp-for="KapanistaOtomatikYedek" class="form-check-label">Kapanışta otomatik yedek al</label>
+            </div>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+        </div>
+    </form>
+</div>
+
+<div class="rp-kart mb-3">
+    <h2 class="h6 mb-3">Görünüm</h2>
+    <form method="post" asp-action="TemaSec" class="rp-tema-secici">
+        @foreach (var secenek in TemaSecenekleri.Tumu)
+        {
+            <label class="rp-tema-karti @(secenek.Anahtar == Model.SeciliTema ? "rp-tema-karti-secili" : "")">
+                <input type="radio" name="tema" value="@secenek.Anahtar" class="rp-tema-radyo" checked="@(secenek.Anahtar == Model.SeciliTema ? "checked" : null)" />
+                <span class="rp-tema-ornek" data-theme="@secenek.Anahtar"></span>
+                <span>@secenek.GorunenAd</span>
+            </label>
+        }
+    </form>
+</div>
+
+<div class="rp-kart">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h6 mb-0">Yedekleme</h2>
+        <form method="post" asp-action="YedekAl">
+            <button type="submit" class="btn btn-outline-primary btn-sm"><i class="bi bi-archive"></i> Şimdi Yedek Al</button>
+        </form>
+    </div>
+
+    @if (Model.Yedekler.Count == 0)
+    {
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-archive", Mesaj = "Henüz yedek alınmamış." })" />
+    }
+    else
+    {
+        <div class="rp-tablo-sarici">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Dosya Adı</th>
+                        <th>Alınma Tarihi</th>
+                        <th>Boyut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var yedek in Model.Yedekler)
+                    {
+                        <tr>
+                            <td>@yedek.DosyaAdi</td>
+                            <td>@yedek.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@((yedek.BoyutBayt / 1024.0).ToString("0.#")) KB</td>
+                            <td class="text-end">
+                                <form asp-action="YedektenGeriYukle" method="post" class="d-inline" data-onay="Veritabanı bu yedeğin üzerine yazılacak, şu andaki veriler kaybolacak. Devam edilsin mi?">
+                                    <input type="hidden" name="yedekDosyaYolu" value="@yedek.DosyaYolu" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-arrow-counterclockwise"></i> Bu Yedeğe Dön</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="rp-kart mt-3">
+    <h2 class="h6 mb-3">Hakkında</h2>
+    <p class="mb-1"><strong>Mentoliz</strong> rehber öğretmenlerin kendi öğrencilerini takip etmesi için yazılmış, tek bilgisayarda çalışan bir masaüstü uygulamasıdır.</p>
+    <p class="mb-3">Geliştiren: <strong>Yusuf Emre Şahin</strong></p>
+
+    <p class="mb-1">Bu uygulama MIT lisansı ile açık kaynak olarak sunulur.</p>
+    <details class="mb-3">
+        <summary class="text-body-secondary" style="cursor: pointer;">MIT lisansının tam metnini göster</summary>
+        <pre class="rp-lisans-metni small text-body-secondary mt-2 mb-0">MIT License
+
+Copyright (c) 2026 Yusuf Emre Şahin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.</pre>
+    </details>
+
+    <p class="mb-2">Mentoliz aşağıdaki açık kaynak kütüphaneleri kullanır, her biri kendi lisansına tabidir:</p>
+    <div class="rp-tablo-sarici">
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Kütüphane</th>
+                    <th>Sürüm</th>
+                    <th>Lisans</th>
+                    <th>Bağlantı</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bildirim in UcuncuTarafBildirimleri.Tumu)
+                {
+                    <tr>
+                        <td>@bildirim.Kutuphane</td>
+                        <td>@bildirim.Surum</td>
+                        <td>@bildirim.Lisans</td>
+                        <td><a href="@bildirim.Baglanti" target="_blank" rel="noopener">@bildirim.Baglanti</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,151 @@
+@model HedefIndexViewModel
+
+@{
+    ViewData["Title"] = "Hedefler";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Öğrenci</label>
+            <select name="ogrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad", Model.OgrenciId))">
+                <option value="">Öğrenci seçin</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Göster</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.OgrenciId.HasValue)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bullseye", Mesaj = "Hedef görmek için önce bir öğrenci seçin." })" />
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-end mb-3">
+        <a asp-action="Ekle" asp-route-ogrenciId="@Model.OgrenciId" class="btn btn-outline-primary"><i class="bi bi-plus-lg"></i> Yeni Hedef Belirle</a>
+    </div>
+
+    @if (Model.AktifHedef is null)
+    {
+        <div class="rp-kart">
+            <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bullseye", Mesaj = "Bu öğrenci için henüz hedef belirlenmemiş." })" />
+        </div>
+    }
+    else
+    {
+        <div class="rp-kart mb-3">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2 class="h6 mb-1">@Model.AktifHedef.HedefUniversite</h2>
+                    <div class="text-body-secondary small">@Model.AktifHedef.HedefBolum · @Model.AktifHedef.PuanTuru.GosterimAdi()</div>
+                </div>
+                <a asp-action="Duzenle" asp-route-id="@Model.AktifHedef.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            </div>
+            <dl class="row mb-0 mt-3">
+                <dt class="col-sm-3">Hedef Sıralama</dt>
+                <dd class="col-sm-9">@(Model.AktifHedef.HedefSiralama?.ToString() ?? "-")</dd>
+                <dt class="col-sm-3">Hedef Toplam Net</dt>
+                <dd class="col-sm-9">@(Model.AktifHedef.HedefToplamNet?.ToString("0.##") ?? "-")</dd>
+            </dl>
+        </div>
+
+        @if (Model.Karsilastirma is not null && Model.Karsilastirma.DersKarsilastirmalari.Count > 0)
+        {
+            <div class="rp-kart mb-3">
+                <h3 class="h6 mb-3">Hedefe Uzaklık</h3>
+                <div class="rp-tablo-sarici">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ders</th>
+                                <th>Hedef Net</th>
+                                <th>Güncel Net</th>
+                                <th>Uzaklık</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var karsilastirma in Model.Karsilastirma.DersKarsilastirmalari)
+                            {
+                                <tr>
+                                    <td>@karsilastirma.DersAdi</td>
+                                    <td>@karsilastirma.HedefNet.ToString("0.##")</td>
+                                    <td>@(karsilastirma.GuncelNet?.ToString("0.##") ?? "-")</td>
+                                    <td>
+                                        @if (karsilastirma.Uzaklik.HasValue)
+                                        {
+                                            var pozitif = karsilastirma.Uzaklik.Value >= 0;
+                                            <span class="fw-semibold @(pozitif ? "text-success" : "text-danger")">
+                                                @(pozitif ? "+" : "")@karsilastirma.Uzaklik.Value.ToString("0.##")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-body-secondary">-</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            <tr class="fw-semibold">
+                                <td>Toplam</td>
+                                <td>@Model.Karsilastirma.ToplamHedefNet.ToString("0.##")</td>
+                                <td>@(Model.Karsilastirma.ToplamGuncelNet?.ToString("0.##") ?? "-")</td>
+                                <td>
+                                    @if (Model.Karsilastirma.ToplamGuncelNet.HasValue)
+                                    {
+                                        var fark = Model.Karsilastirma.ToplamGuncelNet.Value - Model.Karsilastirma.ToplamHedefNet;
+                                        <span class="@(fark >= 0 ? "text-success" : "text-danger")">@(fark >= 0 ? "+" : "")@fark.ToString("0.##")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-body-secondary">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+    @if (Model.Gecmis.Count > 0)
+    {
+        <div class="rp-kart">
+            <h3 class="h6 mb-3">Geçmiş Hedefler</h3>
+            <div class="rp-tablo-sarici">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Üniversite</th>
+                            <th>Bölüm</th>
+                            <th>Puan Türü</th>
+                            <th>Oluşturma Tarihi</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var gecmisHedef in Model.Gecmis)
+                        {
+                            <tr>
+                                <td>@gecmisHedef.HedefUniversite</td>
+                                <td>@gecmisHedef.HedefBolum</td>
+                                <td>@gecmisHedef.PuanTuru.GosterimAdi()</td>
+                                <td>@gecmisHedef.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                                <td class="text-end">
+                                    <form asp-action="Sil" asp-route-id="@gecmisHedef.Id" asp-route-ogrenciId="@Model.OgrenciId" method="post" class="d-inline" data-onay="Bu geçmiş hedefi silmek istediğinize emin misiniz?">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

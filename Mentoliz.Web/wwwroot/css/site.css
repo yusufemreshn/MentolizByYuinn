@@ -1,0 +1,1071 @@
+/* değişken ağırlıklı tek dosya, regular ve italic olmak üzere iki dosya bütün kalınlıkları kapsıyor */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter/InterVariable-Italic.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+html {
+  height: 100%;
+  /* içerik geçiş animasyonunda aşağıdan gelirken sayfa bir anlığına viewport'tan taşıyor, kaydırma çubuğu görünüp kayboluyordu, bu satır çubuğun yerini her zaman ayırıp o titremeyi engelliyor */
+  scrollbar-gutter: stable;
+}
+
+body {
+  min-height: 100%;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--rp-metin);
+  background-color: var(--rp-arkaplan);
+}
+
+a {
+  /* vurgu rengi bazı temalarda kontrastı düşük kalıyordu, bağlantılar için ana rengin yazı/ikon rolündeki karşılığını kullanıyoruz */
+  color: var(--rp-ana-renk-metin);
+}
+
+/* ---- geçiş animasyonları ---- */
+
+/* önce tarayıcının view transitions api'sini denedik ama sayfalar arası yükseklik farkında bütün pencereyi küçültüp büyüterek gösteriyordu ve bazı durumlarda geçişi sessizce hiç çalıştırmıyordu, o yüzden burada kendi css animation'ımızı kullanıyoruz, sadece js'e ihtiyaç duyan çıkış efekti ve aktif çizgi site.js'te */
+
+/* tıklanan link sayfadan çıkarken içerik hafifçe solup aşağı iniyor, js bu sınıfı ekleyip sonra gerçek sayfa değişimini tetikliyor */
+.rp-sayfa-icerigi {
+  transition: opacity 0.16s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  /* sayfa her açıldığında kendiliğinden bir kere oynuyor, js'in class ekleyip kaldırmasına gerek yok, animation transition'dan farklı olarak önceki bir kareyi beklemeden direkt başlıyor */
+  animation: rp-icerik-giris-anim 0.32s cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+
+.rp-sayfa-icerigi.rp-icerik-cikis {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+@keyframes rp-icerik-giris-anim {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* bootstrap'ın kendi sekme geçişine hafif bir yukarı kayma ekliyoruz, sadece opaklık değişimi biraz sönük kalıyordu */
+.tab-pane.fade {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform: translateY(6px);
+}
+
+.tab-pane.fade.show {
+  transform: translateY(0);
+}
+
+/* odak halkasını tema rengine göre veriyoruz, varsayılan bootstrap mavisi kalmasın */
+.btn:focus, .btn:active:focus, .form-control:focus, .form-select:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--rp-ana-renk-metin) 25%, transparent);
+  border-color: var(--rp-ana-renk-metin);
+}
+
+/* ---- genel sayfa iskeleti ---- */
+
+.rp-govde {
+  display: flex;
+  min-height: 100vh;
+}
+
+.rp-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background-color: var(--rp-ana-renk);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.rp-sidebar-baslik {
+  padding: 1.25rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rp-sidebar-menu {
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem 0;
+  flex-grow: 1;
+}
+
+.rp-sidebar-menu a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 1.5rem;
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-size: 0.92rem;
+  border-left: 3px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  position: relative;
+}
+
+.rp-sidebar-menu a:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* aktif menü öğesinin rengi burada, soldaki çizgiyi artık ayrı bir eleman çiziyor çünkü kayma animasyonu için elemanın kendisi lazım, border ile o hareket yapılamıyor */
+.rp-sidebar-menu a.active {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.rp-sidebar-menu i {
+  font-size: 1.05rem;
+  width: 1.2rem;
+  text-align: center;
+}
+
+/* varsayılan halde gizli, sadece aktif linkin içindeki görünür ve isimlendirilir */
+.rp-aktif-cizgi {
+  display: none;
+}
+
+.rp-sidebar-menu a.active .rp-aktif-cizgi {
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 3px;
+  background-color: var(--rp-vurgu);
+  border-radius: 0 3px 3px 0;
+}
+
+/* js önceki sayfadaki satırla şimdiki satır arasındaki farkı --rp-cizgi-eski-y değişkenine yazıp bu sınıfı ekliyor, animation da kendiliğinden o farktan sıfıra doğru kayıyor */
+.rp-sidebar-menu a.active .rp-aktif-cizgi.rp-cizgi-tasin {
+  animation: rp-cizgi-kayma-anim 0.28s cubic-bezier(0.34, 1.2, 0.4, 1) both;
+}
+
+@keyframes rp-cizgi-kayma-anim {
+  from {
+    transform: translateY(var(--rp-cizgi-eski-y, 0px));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.rp-icerik-alani {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-topbar {
+  background-color: var(--rp-yuzey);
+  border-bottom: 1px solid var(--rp-kenarlik);
+  padding: 0.9rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.rp-topbar h1 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* iç sayfalarda üst çubukta çıkan geri düğmesi, tarayıcı geçmişinde bir önceki sayfaya döner */
+.rp-geri-dugmesi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  background-color: var(--rp-yuzey);
+  color: var(--rp-ikincil-metin);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.rp-geri-dugmesi:hover {
+  background-color: var(--rp-arkaplan);
+  border-color: var(--rp-ana-renk-metin);
+  color: var(--rp-ana-renk-metin);
+}
+
+/* üst çubuktaki gece/gündüz geçiş düğmesi, geri düğmesiyle aynı boyut ve stilde */
+.rp-koyu-mod-dugmesi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  background-color: var(--rp-yuzey);
+  color: var(--rp-ikincil-metin);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.rp-koyu-mod-dugmesi:hover {
+  background-color: var(--rp-arkaplan);
+  border-color: var(--rp-ana-renk-metin);
+  color: var(--rp-ana-renk-metin);
+}
+
+/* üst çubuktaki geçici test verisi düğmeleri (yükle/sil), gece modu düğmesiyle aynı boyutta ama kırmızı tonda, yanlışlıkla veri sıfırlanmasın diye görsel olarak ayrılıyor */
+.rp-tehlike-dugmesi {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--rp-tehlike) 45%, transparent);
+  border-radius: var(--rp-yaricap-sm);
+  background-color: color-mix(in srgb, var(--rp-tehlike) 10%, transparent);
+  color: var(--rp-tehlike);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.rp-tehlike-dugmesi:hover {
+  background-color: color-mix(in srgb, var(--rp-tehlike) 18%, transparent);
+  border-color: var(--rp-tehlike);
+  color: var(--rp-tehlike);
+}
+
+.rp-sayfa-icerigi {
+  padding: 1.75rem;
+  flex-grow: 1;
+}
+
+/* dar ekranlarda sabit sidebar yerine üstte basit bir menü çubuğuna geçiyoruz */
+@media (max-width: 900px) {
+  .rp-govde {
+    flex-direction: column;
+  }
+
+  .rp-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+}
+
+/* ---- kart bileşeni ---- */
+
+.rp-kart {
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-md);
+  padding: 1.25rem;
+  box-shadow: var(--rp-golge-1);
+}
+
+.rp-kart-baslik {
+  /* küçük büyük harfle etiket gibi durunca altındaki büyük rakamla arasındaki hiyerarşi daha net oluyor */
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--rp-ikincil-metin);
+  margin-bottom: 0.4rem;
+}
+
+.rp-kart-deger {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  /* rakamlar sabit genişlikte dizilsin diye, yoksa yan yana kartlarda rakamlar hizasız görünüyordu */
+  font-variant-numeric: tabular-nums;
+}
+
+/* istatistik kartlarının ikon rozetini tutuyor, ana sayfada kullanılıyor */
+.rp-kart-ikon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--rp-yaricap-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  background-color: color-mix(in srgb, var(--rp-ana-renk-metin) 12%, transparent);
+  color: var(--rp-ana-renk-metin);
+}
+
+/* geciken ödev gibi dikkat gerektiren kartlarda ikon nötr lacivert yerine durumun rengini taşısın diye */
+.rp-kart-ikon-basari {
+  background-color: color-mix(in srgb, var(--rp-basari) 14%, transparent);
+  color: var(--rp-basari);
+}
+
+.rp-kart-ikon-uyari {
+  background-color: color-mix(in srgb, var(--rp-uyari) 14%, transparent);
+  color: var(--rp-uyari);
+}
+
+.rp-kart-ikon-tehlike {
+  background-color: color-mix(in srgb, var(--rp-tehlike) 14%, transparent);
+  color: var(--rp-tehlike);
+}
+
+/* tablolardaki sayı ve tarih sütunları için, rakamlar sağa yaslı ve sabit genişlikte dizilsin diye */
+.rp-sayisal {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- deneme sonuç girişi otomatik kayıt göstergesi ---- */
+
+.rp-satir-durum {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--rp-basari);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.rp-satir-durum.rp-satir-durum-goster {
+  opacity: 1;
+}
+
+.rp-satir-durum.rp-satir-durum-hata {
+  color: var(--rp-tehlike);
+}
+
+/* ---- dikkat gerektiren öğrenci kartı ---- */
+
+.rp-risk-karti {
+  display: block;
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  padding: 0.65rem 0.8rem;
+  background-color: var(--rp-arkaplan);
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.rp-risk-karti:hover {
+  border-color: var(--rp-tehlike);
+  background-color: var(--rp-yuzey-hover);
+}
+
+.rp-risk-sebep {
+  font-size: 0.78rem;
+  color: var(--rp-ikincil-metin);
+  margin-top: 0.3rem;
+}
+
+/* ---- tablo stili ---- */
+
+.rp-tablo-sarici {
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-md);
+  overflow: hidden;
+}
+
+.rp-tablo-sarici table {
+  margin-bottom: 0;
+  /* bootstrap'ın kendi tablo renk değişkenleri temamızdan bağımsız sabit beyaz/siyah geliyor, gece modunda hücreler böyle beyaz kalmasın diye burada temaya bağlıyoruz */
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--rp-metin);
+}
+
+.rp-tablo-sarici thead th {
+  background-color: var(--rp-arkaplan);
+  border-bottom: 1px solid var(--rp-kenarlik);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--rp-ikincil-metin);
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+.rp-tablo-sarici tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--rp-kenarlik);
+}
+
+.rp-tablo-sarici tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rp-tablo-sarici tbody tr:hover {
+  background-color: var(--rp-arkaplan);
+}
+
+/* ---- buton stili ---- */
+
+.btn-primary {
+  --bs-btn-bg: var(--rp-ana-renk);
+  --bs-btn-border-color: var(--rp-ana-renk);
+  --bs-btn-hover-bg: var(--rp-ana-renk-hover);
+  --bs-btn-hover-border-color: var(--rp-ana-renk-hover);
+  --bs-btn-active-bg: var(--rp-ana-renk-hover);
+  --bs-btn-active-border-color: var(--rp-ana-renk-hover);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--rp-ana-renk-metin);
+  --bs-btn-border-color: var(--rp-ana-renk-metin);
+  --bs-btn-hover-bg: var(--rp-ana-renk);
+  --bs-btn-hover-border-color: var(--rp-ana-renk);
+  --bs-btn-active-bg: var(--rp-ana-renk);
+  --bs-btn-active-border-color: var(--rp-ana-renk);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--rp-tehlike);
+  --bs-btn-border-color: var(--rp-tehlike);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--rp-tehlike) 85%, black);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--rp-tehlike) 85%, black);
+  --bs-btn-active-bg: color-mix(in srgb, var(--rp-tehlike) 85%, black);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--rp-tehlike) 85%, black);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--rp-tehlike);
+  --bs-btn-border-color: var(--rp-tehlike);
+  --bs-btn-hover-bg: var(--rp-tehlike);
+  --bs-btn-hover-border-color: var(--rp-tehlike);
+  --bs-btn-active-bg: var(--rp-tehlike);
+  --bs-btn-active-border-color: var(--rp-tehlike);
+}
+
+/* ---- rozet stili ---- */
+
+.rp-rozet {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  /* net değişimi gibi rakamlar rozet içinde de sabit genişlikte dizilsin diye */
+  font-variant-numeric: tabular-nums;
+}
+
+.rp-rozet-basari {
+  background-color: color-mix(in srgb, var(--rp-basari) 15%, transparent);
+  color: var(--rp-basari);
+}
+
+.rp-rozet-uyari {
+  background-color: color-mix(in srgb, var(--rp-uyari) 15%, transparent);
+  color: var(--rp-uyari);
+}
+
+.rp-rozet-tehlike {
+  background-color: color-mix(in srgb, var(--rp-tehlike) 15%, transparent);
+  color: var(--rp-tehlike);
+}
+
+.rp-rozet-notr {
+  background-color: var(--rp-arkaplan);
+  color: var(--rp-ikincil-metin);
+  border: 1px solid var(--rp-kenarlik);
+}
+
+/* rozet renginde ama tıklanıp durum değiştirilebilen seçim kutusu, ödev durumunu tek tıkla güncellemek için */
+.rp-rozet-secim {
+  border: none;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.rp-rozet-secim:focus {
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--rp-ana-renk-metin) 25%, transparent);
+}
+
+/* ---- hakkında bölümü ---- */
+
+/* lisans metni uzun satır kırmadan taşmasın diye sarılıyor, kart genişliğini bozmasın diye */
+.rp-lisans-metni {
+  white-space: pre-wrap;
+  word-break: break-word;
+  background-color: var(--rp-arkaplan);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  padding: 0.75rem 1rem;
+}
+
+/* ---- grafik alanları ---- */
+
+/* chart.js maintainAspectRatio kapalıyken canvas'ın büyümesini bu sabit yükseklikli kutu sınırlıyor, yoksa geniş sütunlarda grafik orantısızca kocaman görünüyordu */
+.rp-grafik-alani {
+  position: relative;
+  height: 220px;
+}
+
+.rp-grafik-alani canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* halka grafiği kart içinde ortalı ve sabit boyutlu tutuyor, yüzde yazısı da tam ortasına bindiriliyor */
+.rp-halka-alani {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+}
+
+.rp-halka-alani canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.rp-halka-merkez {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.rp-halka-yuzde {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rp-halka-etiket {
+  font-size: 0.72rem;
+  color: var(--rp-ikincil-metin);
+  margin-top: 0.25rem;
+}
+
+/* ---- boş durum ekranı ---- */
+
+.rp-bos-durum {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--rp-ikincil-metin);
+}
+
+.rp-bos-durum i {
+  font-size: 2.5rem;
+  color: var(--rp-kenarlik);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.rp-bos-durum p {
+  margin: 0;
+}
+
+/* ---- yükleniyor göstergesi ---- */
+
+.rp-yukleniyor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--rp-ikincil-metin);
+}
+
+.rp-yukleniyor .spinner-border {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-width: 0.15rem;
+  color: var(--rp-ana-renk-metin);
+}
+
+/* ---- form stili ---- */
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.form-control, .form-select {
+  border-color: var(--rp-kenarlik);
+  background-color: var(--rp-yuzey);
+  color: var(--rp-metin);
+}
+
+/* odaklanınca bootstrap kendi varsayılan beyaz zeminini geri getiriyor, gece modunda tekrar temaya bağlıyoruz */
+.form-control:focus, .form-select:focus {
+  background-color: var(--rp-yuzey);
+  color: var(--rp-metin);
+}
+
+/* ---- bildirim / toast sistemi ---- */
+
+.rp-toast-alani {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  max-width: 22rem;
+  width: calc(100% - 2.5rem);
+}
+
+.rp-toast {
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-left: 4px solid var(--rp-ikincil-metin);
+  border-radius: var(--rp-yaricap-sm);
+  box-shadow: var(--rp-golge-2);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  transform: translateX(120%);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* js bu sınıfı bir sonraki karede ekliyor, css transition'ın tetiklenmesi için */
+.rp-toast-goster {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.rp-toast i:first-child {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.rp-toast-metin {
+  flex-grow: 1;
+  font-size: 0.9rem;
+}
+
+.rp-toast-kapat {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--rp-ikincil-metin);
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.rp-toast-basarili {
+  border-left-color: var(--rp-basari);
+}
+
+.rp-toast-basarili i:first-child {
+  color: var(--rp-basari);
+}
+
+.rp-toast-hata {
+  border-left-color: var(--rp-tehlike);
+}
+
+.rp-toast-hata i:first-child {
+  color: var(--rp-tehlike);
+}
+
+.rp-toast-uyari {
+  border-left-color: var(--rp-uyari);
+}
+
+.rp-toast-uyari i:first-child {
+  color: var(--rp-uyari);
+}
+
+/* ---- onay modalı ---- */
+
+#rp-onay-modali .modal-content {
+  background-color: var(--rp-yuzey);
+  border-color: var(--rp-kenarlik);
+}
+
+.rp-onay-govde {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding-top: 1.5rem;
+}
+
+.rp-onay-ikon {
+  font-size: 1.5rem;
+  color: var(--rp-tehlike);
+  flex-shrink: 0;
+}
+
+/* ---- hata ekranı ---- */
+
+.rp-hata-ekrani {
+  text-align: center;
+  padding: 3.5rem 2rem;
+  max-width: 32rem;
+  margin: 2rem auto;
+}
+
+/* doğrudan çocuk seçici kullanıyoruz, yoksa "ana sayfaya dön" butonunun içindeki ikonu da kapsayıp onu da devasa gösteriyordu */
+.rp-hata-ekrani > i {
+  font-size: 2.75rem;
+  color: var(--rp-tehlike);
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.rp-hata-ekrani h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.rp-hata-ekrani p {
+  color: var(--rp-ikincil-metin);
+  margin-bottom: 1.5rem;
+}
+
+.rp-hata-istek-no {
+  font-size: 0.8rem;
+}
+
+/* ---- tema seçici ---- */
+
+.rp-tema-secici {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.rp-tema-karti {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: border-color 0.15s ease;
+}
+
+.rp-tema-karti:hover {
+  border-color: var(--rp-ana-renk-metin);
+}
+
+/* seçili kart kendi çerçevesini vurgu rengiyle belli ediyor */
+.rp-tema-karti-secili {
+  border-color: var(--rp-ana-renk-metin);
+  box-shadow: 0 0 0 1px var(--rp-ana-renk-metin);
+}
+
+.rp-tema-radyo {
+  margin: 0;
+}
+
+/* örnek renk noktasının kendi data-theme'i var, bu yüzden ekrandaki aktif temadan bağımsız olarak kendi rengini gösteriyor */
+.rp-tema-ornek {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background-color: var(--rp-ana-renk);
+  border: 1px solid var(--rp-kenarlik);
+}
+
+/* ---- öğrenci zaman tüneli ---- */
+
+.rp-zaman-tuneli {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-zaman-tuneli-oge {
+  display: flex;
+  gap: 0.9rem;
+  padding-bottom: 1.1rem;
+  position: relative;
+}
+
+/* son öğede dikey çizgi bir sonraki ikona kadar uzamasın diye ayrı bir seçici */
+.rp-zaman-tuneli-oge:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 1.05rem;
+  top: 2.4rem;
+  bottom: -0.1rem;
+  width: 1px;
+  background-color: var(--rp-kenarlik);
+}
+
+.rp-zaman-tuneli-ikon {
+  flex-shrink: 0;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(in srgb, var(--rp-ana-renk-metin) 12%, transparent);
+  color: var(--rp-ana-renk-metin);
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.rp-zaman-tuneli-govde {
+  flex-grow: 1;
+  min-width: 0;
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-sm);
+  padding: 0.65rem 0.9rem;
+}
+
+/* ---- takvim ---- */
+
+.rp-takvim {
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-md);
+  overflow: hidden;
+  background-color: var(--rp-yuzey);
+}
+
+.rp-takvim-baslik-satiri,
+.rp-takvim-hafta-satiri {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.rp-takvim-gun-basligi {
+  padding: 0.6rem;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--rp-ikincil-metin);
+  background-color: var(--rp-arkaplan);
+  border-bottom: 1px solid var(--rp-kenarlik);
+}
+
+.rp-takvim-hafta-satiri:not(:last-child) {
+  border-bottom: 1px solid var(--rp-kenarlik);
+}
+
+.rp-takvim-gun {
+  min-height: 108px;
+  padding: 0.4rem;
+  border-right: 1px solid var(--rp-kenarlik);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rp-takvim-hafta-satiri .rp-takvim-gun:last-child {
+  border-right: none;
+}
+
+.rp-takvim-gun-disi {
+  background-color: var(--rp-arkaplan);
+}
+
+.rp-takvim-gun-disi .rp-takvim-gun-no {
+  color: var(--rp-ikincil-metin);
+}
+
+.rp-takvim-bugun {
+  box-shadow: inset 0 0 0 2px var(--rp-ana-renk-metin);
+}
+
+.rp-takvim-gun-no {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.rp-takvim-oge-listesi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.rp-takvim-oge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.35rem;
+  border-radius: 0.3rem;
+  font-size: 0.72rem;
+  text-decoration: none;
+  color: var(--rp-metin);
+  background-color: var(--rp-arkaplan);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.rp-takvim-oge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rp-takvim-oge i {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+}
+
+.rp-takvim-oge-gorusme i { color: var(--rp-ana-renk-metin); }
+.rp-takvim-oge-odev i { color: var(--rp-uyari); }
+.rp-takvim-oge-deneme i { color: var(--rp-basari); }
+.rp-takvim-oge-gorev i { color: var(--rp-ikincil-metin); }
+
+.rp-takvim-fazla {
+  font-size: 0.7rem;
+  color: var(--rp-ikincil-metin);
+  padding: 0 0.35rem;
+}
+
+@media (max-width: 900px) {
+  .rp-takvim-gun {
+    min-height: 72px;
+  }
+
+  .rp-takvim-oge span {
+    display: none;
+  }
+}
+
+/* ---- komut paleti ---- */
+
+.rp-komut-paleti-perde {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(16, 20, 30, 0.5);
+  z-index: 1090;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+
+.rp-komut-paleti {
+  width: min(560px, 92vw);
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: var(--rp-yaricap-lg);
+  box-shadow: var(--rp-golge-2);
+  overflow: hidden;
+}
+
+.rp-komut-paleti-arama {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--rp-kenarlik);
+  color: var(--rp-ikincil-metin);
+}
+
+.rp-komut-paleti-arama input {
+  flex-grow: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--rp-metin);
+  font-size: 0.95rem;
+}
+
+.rp-komut-paleti-arama kbd {
+  font-size: 0.72rem;
+  color: var(--rp-ikincil-metin);
+  border: 1px solid var(--rp-kenarlik);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.4rem;
+}
+
+.rp-komut-paleti-sonuclar {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.rp-komut-paleti-satir {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--rp-yaricap-sm);
+  cursor: pointer;
+  color: var(--rp-metin);
+}
+
+.rp-komut-paleti-satir i {
+  color: var(--rp-ikincil-metin);
+  width: 1.1rem;
+  text-align: center;
+}
+
+.rp-komut-paleti-satir-metin {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.rp-komut-paleti-satir-metin small {
+  color: var(--rp-ikincil-metin);
+  font-size: 0.76rem;
+}
+
+.rp-komut-paleti-satir.rp-komut-paleti-secili {
+  background-color: var(--rp-arkaplan);
+}
+
+.rp-komut-paleti-bos {
+  padding: 1rem;
+  text-align: center;
+  color: var(--rp-ikincil-metin);
+  font-size: 0.88rem;
+}
+
+/* ---- hareket azaltma tercihi ---- */
+
+/* işletim sisteminde animasyonlar kısıtlanmışsa bütün geçişleri tek yerden kapatıyoruz, her bileşende ayrı ayrı uğraşmaya gerek kalmasın */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

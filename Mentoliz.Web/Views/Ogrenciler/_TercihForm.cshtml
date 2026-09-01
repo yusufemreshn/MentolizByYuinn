@@ -1,0 +1,38 @@
+@model TercihFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Tercih.Id" />
+    <input type="hidden" asp-for="Tercih.OgrenciId" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">@Model.OgrenciAdSoyad İçin Tercih</h2>
+        <div class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Sıra</label>
+                <input asp-for="Tercih.Sira" type="number" min="1" class="form-control" required />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Üniversite</label>
+                <input asp-for="Tercih.UniversiteAdi" class="form-control" required />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Bölüm</label>
+                <input asp-for="Tercih.BolumAdi" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Taban Puan</label>
+                <input asp-for="Tercih.TabanPuan" type="number" step="0.01" class="form-control" />
+                <div class="form-text">Bilgi amaçlıdır, her yıl değişebilir.</div>
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Notlar</label>
+                <input asp-for="Tercih.Notlar" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Detay" asp-route-id="@Model.Tercih.OgrenciId" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

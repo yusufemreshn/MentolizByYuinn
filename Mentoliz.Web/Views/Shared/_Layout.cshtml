@@ -1,0 +1,124 @@
+@{
+    // sol menüde hangi öğenin aktif göründüğünü belirlemek için şu anki controller adını alıyoruz
+    var aktifController = ViewContext.RouteData.Values["controller"]?.ToString();
+    // aktif tema ayarlar sayfasından kaydedilen değer, filtre bunu her sayfada ViewData'ya koyuyor
+    var aktifTema = ViewData["AktifTema"] as string ?? TemaSecenekleri.Varsayilan;
+    // gece modu açık mı, o da aynı filtre üzerinden her sayfada geliyor
+    var koyuMu = ViewData["KoyuMu"] as bool? ?? false;
+    // sol menüdeki her controller'ın Index'i ana liste sayfası, geri kalan her action (detay, ekle, düzenle, rapor, sonuç girişi vb.) iç sayfa sayılıyor
+    var aktifAction = ViewContext.RouteData.Values["action"]?.ToString();
+    var icSayfaMi = !string.Equals(aktifAction, "Index", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="tr" data-theme="@aktifTema" data-mod="@(koyuMu ? "koyu" : "acik")" data-bs-theme="@(koyuMu ? "dark" : "light")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Mentoliz</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/temalar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="rp-govde">
+        <aside class="rp-sidebar">
+            <div class="rp-sidebar-baslik">
+                <i class="bi bi-mortarboard-fill"></i>
+                Mentoliz
+            </div>
+            @* her linkin sonundaki boş span sadece aktif olduğunda css ile görünüyor, sayfa değişince bu çizgi eski satırdan yeni satıra doğru kayarak taşınıyor *@
+            <ul class="rp-sidebar-menu">
+                <li><a class="@(aktifController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Ana Sayfa<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Bugun" ? "active" : "")" asp-controller="Bugun" asp-action="Index"><i class="bi bi-calendar-check"></i> Bugün<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Takvim" ? "active" : "")" asp-controller="Takvim" asp-action="Index"><i class="bi bi-calendar3"></i> Takvim<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Ogrenciler" ? "active" : "")" asp-controller="Ogrenciler" asp-action="Index"><i class="bi bi-people"></i> Öğrenciler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Siniflar" ? "active" : "")" asp-controller="Siniflar" asp-action="Index"><i class="bi bi-diagram-3"></i> Sınıflar<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Odevler" ? "active" : "")" asp-controller="Odevler" asp-action="Index"><i class="bi bi-journal-text"></i> Ödevler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Denemeler" ? "active" : "")" asp-controller="Denemeler" asp-action="Index"><i class="bi bi-clipboard-data"></i> Denemeler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Gorusmeler" ? "active" : "")" asp-controller="Gorusmeler" asp-action="Index"><i class="bi bi-chat-dots"></i> Görüşmeler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Hedefler" ? "active" : "")" asp-controller="Hedefler" asp-action="Index"><i class="bi bi-bullseye"></i> Hedefler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "CalismaProgramlari" ? "active" : "")" asp-controller="CalismaProgramlari" asp-action="Index"><i class="bi bi-calendar-week"></i> Çalışma Programı<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Konular" ? "active" : "")" asp-controller="Konular" asp-action="Index"><i class="bi bi-book"></i> Konu Takip<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Gorevler" ? "active" : "")" asp-controller="Gorevler" asp-action="Index"><i class="bi bi-check2-square"></i> Görevler<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Notlar" ? "active" : "")" asp-controller="Notlar" asp-action="Index"><i class="bi bi-sticky"></i> Notlarım<span class="rp-aktif-cizgi"></span></a></li>
+                <li><a class="@(aktifController == "Ayarlar" ? "active" : "")" asp-controller="Ayarlar" asp-action="Index"><i class="bi bi-gear"></i> Ayarlar<span class="rp-aktif-cizgi"></span></a></li>
+            </ul>
+        </aside>
+        <div class="rp-icerik-alani">
+            <header class="rp-topbar">
+                <div class="d-flex align-items-center gap-2">
+                    @if (icSayfaMi)
+                    {
+                        <button type="button" class="rp-geri-dugmesi" onclick="history.back()" aria-label="Geri dön" title="Geri dön"><i class="bi bi-arrow-left"></i></button>
+                    }
+                    <h1>@ViewData["Title"]</h1>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="rp-geri-dugmesi" id="komut-paleti-ac" aria-label="Öğrenci ara veya sayfaya git" title="Ara (Ctrl+K)"><i class="bi bi-search"></i></button>
+                    @* geçici: arkadaşlara test amaçlı gönderirken örnek veri yükleyip silebilmek için, teslimden önce kaldırılacak *@
+                    <form method="post" asp-controller="Ayarlar" asp-action="DemoVeriYukle" data-onay="Mevcut öğrenci, sınıf, deneme, ödev ve not verilerinin yerine örnek test verisi yüklenecek. Devam edilsin mi?">
+                        <input type="hidden" name="donusUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                        <button type="submit" class="rp-tehlike-dugmesi" aria-label="Test verisi yükle" title="Test verisi yükle">
+                            <i class="bi bi-magic"></i>
+                        </button>
+                    </form>
+                    <form method="post" asp-controller="Ayarlar" asp-action="DemoVeriSil" data-onay="Örnek test verisi (öğrenciler, sınıflar, denemeler, ödevler, notlar vb.) tamamen silinecek. Devam edilsin mi?">
+                        <input type="hidden" name="donusUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                        <button type="submit" class="rp-tehlike-dugmesi" aria-label="Test verisini sil" title="Test verisini sil">
+                            <i class="bi bi-trash3"></i>
+                        </button>
+                    </form>
+                    <form method="post" asp-controller="Ayarlar" asp-action="KoyuModDegistir">
+                        <input type="hidden" name="donusUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                        <button type="submit" class="rp-koyu-mod-dugmesi" aria-label="@(koyuMu ? "Gündüz moduna geç" : "Gece moduna geç")" title="@(koyuMu ? "Gündüz moduna geç" : "Gece moduna geç")">
+                            <i class="bi @(koyuMu ? "bi-sun" : "bi-moon-stars")"></i>
+                        </button>
+                    </form>
+                </div>
+            </header>
+            <main class="rp-sayfa-icerigi">
+                <partial name="_Bildirim" />
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    @* komut paleti, ctrl+k veya üstteki büyüteç ile açılıyor, öğrenci arama ve sol menüdeki sayfalara hızlı geçiş için *@
+    <div id="komut-paleti-perde" class="rp-komut-paleti-perde d-none">
+        <div class="rp-komut-paleti" role="dialog" aria-modal="true" aria-label="Ara">
+            <div class="rp-komut-paleti-arama">
+                <i class="bi bi-search"></i>
+                <input type="text" id="komut-paleti-girdi" placeholder="Öğrenci ara veya sayfaya git..." autocomplete="off" />
+                <kbd>Esc</kbd>
+            </div>
+            <ul id="komut-paleti-sonuclar" class="rp-komut-paleti-sonuclar"></ul>
+        </div>
+    </div>
+
+    @* bildirimler burada, sağ üstte sabit konumda birikiyor *@
+    <div id="rp-toast-alani" class="rp-toast-alani" aria-live="polite"></div>
+
+    @* bütün sil/geri yükle gibi işlemler tarayıcının çirkin confirm() kutusu yerine bu tek paylaşılan modalı kullanıyor *@
+    <div class="modal fade" id="rp-onay-modali" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body rp-onay-govde">
+                    <i class="bi bi-exclamation-triangle-fill rp-onay-ikon"></i>
+                    <p class="rp-onay-mesaj mb-0"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="button" class="btn btn-danger" id="rp-onay-onayla">Evet, Devam Et</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/komut-paleti.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

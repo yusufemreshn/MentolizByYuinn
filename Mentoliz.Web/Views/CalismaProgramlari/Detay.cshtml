@@ -1,0 +1,77 @@
+@model CalismaProgramiDetayViewModel
+
+@{
+    ViewData["Title"] = $"{Model.OgrenciAdSoyad} - Çalışma Programı";
+    var saatler = Model.Program.Satirlar.Select(s => s.BaslangicSaati).Distinct().OrderBy(s => s).ToList();
+    var gunler = Enum.GetValues<Gun>();
+}
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h2 class="h5 mb-1">@Model.OgrenciAdSoyad</h2>
+        <div class="text-body-secondary small">
+            Hafta başlangıcı @Model.Program.HaftaBaslangicTarihi.ToString("dd.MM.yyyy") · Gerçekleşme %@Model.Program.GerceklesmeYuzdesi
+        </div>
+    </div>
+    <a asp-action="SatirEkle" asp-route-calismaProgramiId="@Model.Program.Id" class="btn btn-outline-primary"><i class="bi bi-plus-lg"></i> Satır Ekle</a>
+</div>
+
+@if (saatler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-week", Mesaj = "Bu hafta için henüz satır eklenmemiş." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table table-bordered text-center align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Saat</th>
+                    @foreach (var gun in gunler)
+                    {
+                        <th>@gun.GosterimAdi()</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var saat in saatler)
+                {
+                    <tr>
+                        <td class="fw-semibold">@saat.ToString(@"hh\:mm")</td>
+                        @foreach (var gun in gunler)
+                        {
+                            var satir = Model.Program.Satirlar.FirstOrDefault(s => s.Gun == gun && s.BaslangicSaati == saat);
+                            <td class="@(satir?.TamamlandiMi == true ? "bg-opacity-25 bg-success" : "")">
+                                @if (satir is not null)
+                                {
+                                    <div class="small">
+                                        <div class="fw-semibold">@(satir.DersAdi ?? satir.Aciklama)</div>
+                                        <div class="text-body-secondary">@satir.BaslangicSaati.ToString(@"hh\:mm")-@satir.BitisSaati.ToString(@"hh\:mm")</div>
+                                        @if (satir.TamamlandiMi)
+                                        {
+                                            <span class="rp-rozet rp-rozet-basari">Tamamlandı</span>
+                                        }
+                                        <div class="mt-1 d-flex gap-1 justify-content-center">
+                                            <form asp-action="SatirTamamlandi" method="post">
+                                                <input type="hidden" name="id" value="@satir.Id" />
+                                                <input type="hidden" name="calismaProgramiId" value="@Model.Program.Id" />
+                                                @* razor value="@boolIfadesi" yazılınca bunu html boolean attribute sanıp true için value="value", false için attribute'u hiç yazmıyor, o yüzden burada string'e çeviriyoruz *@
+                                                <input type="hidden" name="tamamlandiMi" value="@(!satir.TamamlandiMi ? "true" : "false")" />
+                                                <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                                            </form>
+                                            <form asp-action="SatirSil" asp-route-id="@satir.Id" asp-route-calismaProgramiId="@Model.Program.Id" method="post" data-onay="Bu satırı silmek istediğinize emin misiniz?">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

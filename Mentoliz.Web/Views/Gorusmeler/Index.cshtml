@@ -1,0 +1,77 @@
+@model GorusmeListeViewModel
+
+@{
+    ViewData["Title"] = "Görüşmeler";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Öğrenci</label>
+            <select name="ogrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad", Model.OgrenciId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Tür</label>
+            <select name="tur" class="form-select">
+                <option value="">Tümü</option>
+                @foreach (var deger in Enum.GetValues<GorusmeTuru>())
+                {
+                    if (deger == Model.Tur)
+                    {
+                        <option value="@deger" selected>@deger.GosterimAdi()</option>
+                    }
+                    else
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filtrele</button>
+            <a asp-action="Ekle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-plus-lg"></i> Ekle</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.Gorusmeler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-chat-dots", Mesaj = "Aramanıza uyan görüşme bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Öğrenci</th>
+                    <th>Tür</th>
+                    <th>Konu</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gorusme in Model.Gorusmeler)
+                {
+                    <tr>
+                        <td>@gorusme.Tarih.ToString("dd.MM.yyyy")</td>
+                        <td><a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@gorusme.OgrenciId">@gorusme.OgrenciAdSoyad</a></td>
+                        <td><span class="rp-rozet rp-rozet-notr">@gorusme.Tur.GosterimAdi()</span></td>
+                        <td>@gorusme.Konu</td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@gorusme.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@gorusme.Id" method="post" class="d-inline" data-onay="Bu görüşme kaydını silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

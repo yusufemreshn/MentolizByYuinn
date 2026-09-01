@@ -1,0 +1,103 @@
+@model VeliRaporuViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Ogrenci.AdSoyad} - Veli Raporu";
+    Layout = "_RaporLayout";
+}
+
+<div class="rp-veli-mesaji-kutusu no-print mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="h6 mb-0"><i class="bi bi-chat-square-text"></i> Veli İletişim Mesajı</h2>
+        <button type="button" id="veli-mesaji-kopyala" class="btn btn-sm btn-outline-primary" data-varsayilan-metin="Kopyala" data-basarili-metin="Kopyalandı">
+            <i class="bi bi-clipboard"></i> Kopyala
+        </button>
+    </div>
+    <textarea id="veli-mesaji-metni" class="form-control" rows="6" readonly>@Model.VeliMesajiMetni</textarea>
+    <div class="small text-body-secondary mt-1">Bu kutu yazdırılan raporun bir parçası değil, sadece kopyalayıp WhatsApp veya SMS ile göndermeniz için.</div>
+</div>
+
+<div class="rp-rapor-baslik">
+    <div>
+        <h1>@Model.Ogrenci.AdSoyad</h1>
+        <div class="text-body-secondary">@(Model.Ogrenci.SinifAdi ?? "Sınıfsız")</div>
+    </div>
+    <div class="rp-rapor-tarih">
+        Veli Raporu<br />
+        @Model.OlusturmaTarihi.ToString("dd.MM.yyyy")
+    </div>
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Net Gelişimi</h2>
+    @if (Model.DenemeAnalizi.NetGelisimi.Count == 0)
+    {
+        <p class="text-body-secondary small">Henüz deneme sonucu girilmemiş.</p>
+    }
+    else
+    {
+        <canvas id="net-gelisimi-grafigi" height="90"></canvas>
+        <script type="application/json" id="net-gelisimi-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DenemeAnalizi.NetGelisimi.Select(n => new { etiket = n.DenemeAdi, net = n.ToplamNet })))</script>
+    }
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Ödev Düzeni</h2>
+    <div class="rp-rapor-ozet-grid">
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Toplam Ödev</div>
+            <div class="deger">@Model.OdevOzeti.ToplamOdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Tamamlanan</div>
+            <div class="deger">@Model.OdevOzeti.TamamlananOdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Tamamlama Oranı</div>
+            <div class="deger">%@Model.OdevOzeti.TamamlamaOrani</div>
+        </div>
+    </div>
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Kurumda Geçirilen Süre</h2>
+    @if (Model.HaftalikBulunmaSuresi.Count == 0)
+    {
+        <p class="text-body-secondary small">Program tanımlanmamış.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Gün</th>
+                    <th>Toplam Süre</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gun in Model.HaftalikBulunmaSuresi)
+                {
+                    <tr>
+                        <td>@gun.Gun.GosterimAdi()</td>
+                        <td>@gun.ToplamSure.ToString(@"hh\:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Öğretmen Yorumu</h2>
+    <div class="rp-rapor-yorum-alani">
+        @(string.IsNullOrWhiteSpace(Model.Ogrenci.GenelNotlar) ? "" : Model.Ogrenci.GenelNotlar)
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.DenemeAnalizi.NetGelisimi.Count > 0)
+    {
+        <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+        <script src="~/js/rapor-grafik.js" asp-append-version="true"></script>
+    }
+    <script src="~/js/veli-mesaji.js" asp-append-version="true"></script>
+}

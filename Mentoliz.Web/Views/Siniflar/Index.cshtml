@@ -1,0 +1,60 @@
+@model SinifListeViewModel
+
+@{
+    ViewData["Title"] = "Sınıflar";
+}
+
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="Ekle" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Yeni Sınıf</a>
+</div>
+
+@if (Model.Siniflar.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-diagram-3", Mesaj = "Henüz sınıf eklenmemiş." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Sınıf Adı</th>
+                    <th>Seviye</th>
+                    <th>Alan</th>
+                    <th>Öğrenci Sayısı</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var sinif in Model.Siniflar)
+                {
+                    <tr>
+                        <td><a asp-action="Detay" asp-route-id="@sinif.Id">@sinif.Ad</a></td>
+                        <td>@sinif.Seviye.GosterimAdi()</td>
+                        <td>@sinif.Alan.GosterimAdi()</td>
+                        <td>@sinif.OgrenciSayisi / @sinif.Kontenjan</td>
+                        <td>
+                            @if (sinif.AktifMi)
+                            {
+                                <span class="rp-rozet rp-rozet-basari">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="rp-rozet rp-rozet-notr">Pasif</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@sinif.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@sinif.Id" method="post" class="d-inline" data-onay="Bu sınıfı silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

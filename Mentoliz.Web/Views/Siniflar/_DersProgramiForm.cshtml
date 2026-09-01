@@ -1,0 +1,48 @@
+@model DersProgramiFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Satir.Id" />
+    <input type="hidden" asp-for="Satir.SinifId" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">@Model.SinifAdi Sınıfı İçin Ders Saati</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Gün</label>
+                <select asp-for="Satir.Gun" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Gun>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Başlangıç Saati</label>
+                <input asp-for="Satir.BaslangicSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bitiş Saati</label>
+                <input asp-for="Satir.BitisSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ders</label>
+                <select asp-for="Satir.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Ders seçin</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Derslik</label>
+                <input asp-for="Satir.DerslikAdi" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Öğretmen</label>
+                <input asp-for="Satir.OgretmenAdi" class="form-control" />
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Detay" asp-route-id="@Model.Satir.SinifId" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

@@ -1,0 +1,49 @@
+@model GorevFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Gorev.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Görev Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label">Başlık</label>
+                <input asp-for="Gorev.Baslik" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tarih</label>
+                <input asp-for="Gorev.Tarih" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Öğrenci</label>
+                <select asp-for="Gorev.OgrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad"))">
+                    <option value="">Genel (öğrenciye bağlı değil)</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Öncelik</label>
+                <select asp-for="Gorev.Oncelik" class="form-select">
+                    @foreach (var deger in Enum.GetValues<GorevOnceligi>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Açıklama</label>
+                <textarea asp-for="Gorev.Aciklama" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-12">
+                <div class="form-check">
+                    <input asp-for="Gorev.TamamlandiMi" type="checkbox" class="form-check-input" />
+                    <label asp-for="Gorev.TamamlandiMi" class="form-check-label">Tamamlandı</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

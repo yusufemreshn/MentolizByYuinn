@@ -1,0 +1,66 @@
+@model TakvimIndexViewModel
+@using Mentoliz.Business.Dto.Ortak
+
+@{
+    ViewData["Title"] = "Takvim";
+
+    // .net'in kültüre bağlı ay adı yerine kendi sabit türkçe listemizi kullanıyoruz, sunucu kültürü ingilizce olsa bile bozulmasın diye
+    string[] ayAdlari = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
+
+    var gunler = TakvimGorunumOlusturucu.GunleriOlustur(Model.AyBaslangici);
+    var haftalar = gunler.Chunk(7);
+    var oncekiAy = Model.AyBaslangici.AddMonths(-1);
+    var sonrakiAy = Model.AyBaslangici.AddMonths(1);
+
+    string OgeUrlOlustur(TakvimOgesiDTO oge) => oge.Tur switch
+    {
+        "gorusme" => Url.Action("Duzenle", "Gorusmeler", new { id = oge.IlgiliId })!,
+        "odev" => Url.Action("Duzenle", "Odevler", new { id = oge.IlgiliId })!,
+        "deneme" => Url.Action("Detay", "Denemeler", new { id = oge.IlgiliId })!,
+        _ => Url.Action("Duzenle", "Gorevler", new { id = oge.IlgiliId })!
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-yil="@oncekiAy.Year" asp-route-ay="@oncekiAy.Month"><i class="bi bi-chevron-left"></i> Önceki Ay</a>
+    <h2 class="h5 mb-0">@ayAdlari[Model.AyBaslangici.Month - 1] @Model.AyBaslangici.Year</h2>
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-yil="@sonrakiAy.Year" asp-route-ay="@sonrakiAy.Month">Sonraki Ay <i class="bi bi-chevron-right"></i></a>
+</div>
+
+<div class="rp-takvim">
+    <div class="rp-takvim-baslik-satiri">
+        @foreach (var gun in Enum.GetValues<Gun>())
+        {
+            <div class="rp-takvim-gun-basligi">@gun.GosterimAdi()</div>
+        }
+    </div>
+
+    @foreach (var hafta in haftalar)
+    {
+        <div class="rp-takvim-hafta-satiri">
+            @foreach (var gun in hafta)
+            {
+                var buAydaMi = gun.Month == Model.AyBaslangici.Month;
+                var bugunMu = gun.Date == DateTime.Today;
+                var gununOgeleri = Model.Ogeler.Where(o => o.Tarih.Date == gun.Date).ToList();
+
+                <div class="rp-takvim-gun @(buAydaMi ? "" : "rp-takvim-gun-disi") @(bugunMu ? "rp-takvim-bugun" : "")">
+                    <div class="rp-takvim-gun-no">@gun.Day</div>
+                    <div class="rp-takvim-oge-listesi">
+                        @foreach (var oge in gununOgeleri.Take(4))
+                        {
+                            <a href="@OgeUrlOlustur(oge)" class="rp-takvim-oge rp-takvim-oge-@oge.Tur" title="@oge.Baslik">
+                                <i class="bi @ZamanTuneliGorunumOlusturucu.Ikon(oge.Tur)"></i>
+                                <span>@oge.Baslik</span>
+                            </a>
+                        }
+                        @if (gununOgeleri.Count > 4)
+                        {
+                            <div class="rp-takvim-fazla">+@(gununOgeleri.Count - 4) daha</div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

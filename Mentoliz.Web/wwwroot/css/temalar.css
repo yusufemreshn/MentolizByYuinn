@@ -1,0 +1,123 @@
+/* gölge ve köşe yarıçapı temadan bağımsız, her tema ve her modda aynı kalıyor, bu yüzden ayrı bir evrensel blokta */
+:root {
+  --rp-golge-1: 0 1px 2px rgba(16, 24, 40, 0.04);
+  --rp-golge-2: 0 4px 14px rgba(16, 24, 40, 0.08);
+  --rp-yaricap-sm: 0.5rem;
+  --rp-yaricap-md: 0.6rem;
+  --rp-yaricap-lg: 0.75rem;
+  /* kart gibi yüzeylerin hover rengi, açık modda zemin rengiyle aynı, aşağıda gece modu için ayrıca bir basamak açık tanımlanıyor */
+  --rp-yuzey-hover: var(--rp-arkaplan);
+  /* ana renk hem dolgu (sidebar, buton zemini, beyaz yazıyla birlikte) hem de yazı/ikon rengi olarak kullanılıyor, bu iki rol gece modunda çakışıyor: dolgu koyu kalmalı, yazı açık olmalı. o yüzden yazı/ikon kullanımı için ayrı bir token var, açık modda ana renkle birebir aynı */
+  --rp-ana-renk-metin: var(--rp-ana-renk);
+}
+
+/* beş tema da burada tanımlı, html etiketindeki data-theme özelliği hangisinin aktif olacağını belirliyor */
+/* varsayılan tema burada, data-theme hiç set edilmemişse veya "lacivert" ise bu devreye giriyor */
+:root,
+[data-theme="lacivert"] {
+  --rp-ana-renk: #1b3a6b;
+  --rp-ana-renk-hover: #142c52;
+  --rp-vurgu: #0969da;
+  --rp-arkaplan: #f8f9fb;
+  --rp-yuzey: #ffffff;
+  --rp-kenarlik: #e3e8ef;
+  --rp-metin: #1a1a1a;
+  --rp-ikincil-metin: #5b6b82;
+  --rp-basari: #198754;
+  --rp-uyari: #b45309;
+  --rp-tehlike: #dc2626;
+}
+
+[data-theme="zumrut"] {
+  --rp-ana-renk: #047857;
+  --rp-ana-renk-hover: #036045;
+  --rp-vurgu: #10b981;
+  --rp-arkaplan: #f7faf9;
+  --rp-yuzey: #ffffff;
+  --rp-kenarlik: #dce7e2;
+  --rp-metin: #1a1a1a;
+  --rp-ikincil-metin: #597268;
+  --rp-basari: #16a34a;
+  --rp-uyari: #b45309;
+  --rp-tehlike: #dc2626;
+}
+
+[data-theme="minimal"] {
+  --rp-ana-renk: #0072f5;
+  --rp-ana-renk-hover: #005bc4;
+  --rp-vurgu: #0072f5;
+  --rp-arkaplan: #fafafa;
+  --rp-yuzey: #ffffff;
+  --rp-kenarlik: #ebebeb;
+  --rp-metin: #171717;
+  --rp-ikincil-metin: #787774;
+  --rp-basari: #198754;
+  --rp-uyari: #b45309;
+  --rp-tehlike: #dc2626;
+}
+
+[data-theme="indigo"] {
+  --rp-ana-renk: #5856d6;
+  --rp-ana-renk-hover: #4442b0;
+  --rp-vurgu: #5e6ad2;
+  --rp-arkaplan: #f5f5fa;
+  --rp-yuzey: #ffffff;
+  --rp-kenarlik: #e2e1f0;
+  --rp-metin: #1a1a1a;
+  --rp-ikincil-metin: #5d5a78;
+  --rp-basari: #198754;
+  --rp-uyari: #b45309;
+  --rp-tehlike: #dc2626;
+}
+
+[data-theme="toprak"] {
+  --rp-ana-renk: #b85c38;
+  --rp-ana-renk-hover: #96492d;
+  --rp-vurgu: #e8a33d;
+  --rp-arkaplan: #f7f6f3;
+  --rp-yuzey: #ffffff;
+  --rp-kenarlik: #e8e2d8;
+  --rp-metin: #1a1a1a;
+  --rp-ikincil-metin: #7a6f63;
+  --rp-basari: #198754;
+  --rp-uyari: #b45309;
+  --rp-tehlike: #dc2626;
+}
+
+/* gece modunda zemin ve metin her temada aynı koyu palete dönüyor, ana renk ve vurgu ise aşağıda tema başına ayrıca açıklaştırılıyor */
+[data-mod="koyu"] {
+  --rp-arkaplan: #14161c;
+  --rp-yuzey: #1c1f28;
+  --rp-yuzey-hover: #232733;
+  --rp-kenarlik: #2f3341;
+  --rp-metin: #e9eaee;
+  --rp-ikincil-metin: #9ba1b0;
+  /* koyu zeminde ince gölge neredeyse görünmüyor, derinliği zemin basamağıyla veriyoruz ama gölgeleri de biraz daha belirgin tutuyoruz */
+  --rp-golge-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --rp-golge-2: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* açık modun koyu ana renkleri koyu yüzeyde metin veya ikon olarak kullanılınca neredeyse kayboluyordu, o yüzden sadece yazı/ikon rolü için tema başına açıklaştırılmış bir karşılık tanımlıyoruz */
+/* sidebar ve buton zemini gibi dolgu kullanımları hâlâ orijinal --rp-ana-renk'i kullanıyor, bu yüzden onlar burada değişmiyor */
+[data-theme="lacivert"][data-mod="koyu"] {
+  --rp-ana-renk-metin: #7aa2e3;
+  --rp-vurgu: #4d9be6;
+}
+
+[data-theme="zumrut"][data-mod="koyu"] {
+  --rp-ana-renk-metin: #3ecf8e;
+}
+
+[data-theme="minimal"][data-mod="koyu"] {
+  --rp-ana-renk-metin: #5b9dfb;
+  --rp-vurgu: #5b9dfb;
+}
+
+[data-theme="indigo"][data-mod="koyu"] {
+  --rp-ana-renk-metin: #9b99e8;
+  --rp-vurgu: #9b99e8;
+}
+
+[data-theme="toprak"][data-mod="koyu"] {
+  --rp-ana-renk-metin: #e08a5f;
+}

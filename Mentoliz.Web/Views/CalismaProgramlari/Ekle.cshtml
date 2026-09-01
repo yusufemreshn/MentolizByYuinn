@@ -1,0 +1,28 @@
+@model CalismaProgramiFormViewModel
+
+@{
+    ViewData["Title"] = "Yeni Çalışma Programı";
+}
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Program.OgrenciId" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">@Model.OgrenciAdSoyad İçin Yeni Hafta</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Hafta Başlangıcı</label>
+                <input asp-for="Program.HaftaBaslangicTarihi" type="date" class="form-control" required />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Açıklama</label>
+                <textarea asp-for="Program.Aciklama" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" asp-route-ogrenciId="@Model.Program.OgrenciId" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

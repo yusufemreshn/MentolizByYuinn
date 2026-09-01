@@ -1,0 +1,93 @@
+@model OgrenciFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Ogrenci.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Genel Bilgiler</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Ad</label>
+                <input asp-for="Ogrenci.Ad" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Soyad</label>
+                <input asp-for="Ogrenci.Soyad" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Telefon</label>
+                <input asp-for="Ogrenci.Telefon" class="form-control" placeholder="0555 555 55 55" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Öğrenci No</label>
+                <input asp-for="Ogrenci.OgrenciNo" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Sınıf</label>
+                <select asp-for="Ogrenci.SinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad"))">
+                    <option value="">Sınıf seçilmedi</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Doğum Tarihi</label>
+                <input asp-for="Ogrenci.DogumTarihi" type="date" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Cinsiyet</label>
+                <select asp-for="Ogrenci.Cinsiyet" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Cinsiyet>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Alan</label>
+                <select asp-for="Ogrenci.Alan" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Alan>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Okul Adı</label>
+                <input asp-for="Ogrenci.OkulAdi" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Kayıt Tarihi</label>
+                <input asp-for="Ogrenci.KayitTarihi" type="date" class="form-control" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Genel Notlar</label>
+                <textarea asp-for="Ogrenci.GenelNotlar" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-12 form-check">
+                <input asp-for="Ogrenci.AktifMi" class="form-check-input" />
+                <label class="form-check-label" asp-for="Ogrenci.AktifMi">Aktif öğrenci</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="rp-kart">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h6 mb-0">Veliler</h2>
+            <button type="button" id="veli-ekle-butonu" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Veli Ekle</button>
+        </div>
+        <div id="veli-satirlari-alani" class="d-flex flex-column gap-3">
+            @for (var i = 0; i < Model.Ogrenci.Veliler.Count; i++)
+            {
+                <partial name="_VeliSatiri" model="@(i, Model.Ogrenci.Veliler[i])" />
+            }
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>
+
+<template id="veli-satiri-sablonu">
+    <partial name="_VeliSatiri" model="@((-1, new VeliKaydetDTO()))" />
+</template>

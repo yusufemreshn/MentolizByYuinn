@@ -1,0 +1,157 @@
+@model OdevListeViewModel
+
+@{
+    ViewData["Title"] = "Ödevler";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Ara</label>
+            <input type="text" name="arama" value="@Model.Arama" class="form-control" placeholder="Konu başlığı" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Sınıf</label>
+            <select name="sinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad", Model.SinifId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Ders</label>
+            <select name="dersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad", Model.DersId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Durum</label>
+            <select name="durum" class="form-select">
+                <option value="">Tümü</option>
+                @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                {
+                    if (deger == Model.Durum)
+                    {
+                        <option value="@deger" selected>@deger.GosterimAdi()</option>
+                    }
+                    else
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filtrele</button>
+            <a asp-action="Yoklama" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-grid-3x3-gap"></i> Yoklama</a>
+            <a asp-action="TopluAtamaEkle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-people"></i> Toplu Ver</a>
+            <a asp-action="Ekle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-plus-lg"></i> Ekle</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.TopluAtamalar.Count > 0)
+{
+    <div class="rp-kart mb-3">
+        <h2 class="h6 mb-3">Toplu Atamalar</h2>
+        <div class="rp-tablo-sarici">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Başlık</th>
+                        <th>Sınıf</th>
+                        <th>Ders</th>
+                        <th>Veriliş</th>
+                        <th>Son Teslim</th>
+                        <th>Ödev Sayısı</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var toplu in Model.TopluAtamalar)
+                    {
+                        <tr>
+                            <td>@toplu.Baslik</td>
+                            <td>@toplu.SinifAdi</td>
+                            <td>@toplu.DersAdi</td>
+                            <td>@toplu.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@toplu.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>@toplu.OdevSayisi</td>
+                            <td class="text-end">
+                                <form asp-action="TopluAtamaSil" asp-route-id="@toplu.Id" method="post" class="d-inline" data-onay="Bu toplu atamayı silmek istediğinize emin misiniz? Öğrencilerin bireysel ödev kayıtları silinmez, sadece grup bağlantısı kalkar.">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.Odevler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-text", Mesaj = "Aramanıza uyan ödev bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Öğrenci</th>
+                    <th>Ders</th>
+                    <th>Konu</th>
+                    <th>Veriliş</th>
+                    <th>Son Teslim</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var odev in Model.Odevler)
+                {
+                    var rozetSinifi = odev.Durum switch
+                    {
+                        OdevDurumu.Tamamlandi => "rp-rozet-basari",
+                        OdevDurumu.Gecikti => "rp-rozet-tehlike",
+                        OdevDurumu.EksikTamamlandi => "rp-rozet-uyari",
+                        OdevDurumu.Yapilmadi => "rp-rozet-tehlike",
+                        _ => "rp-rozet-notr"
+                    };
+
+                    <tr>
+                        <td>@odev.OgrenciAdSoyad</td>
+                        <td>@odev.DersAdi</td>
+                        <td>@odev.KonuBasligi</td>
+                        <td>@odev.VerilisTarihi.ToString("dd.MM.yyyy")</td>
+                        <td>@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                        <td><span class="rp-rozet @rozetSinifi">@odev.Durum.GosterimAdi()</span></td>
+                        <td class="text-end">
+                            <form asp-action="DurumGuncelle" asp-route-id="@odev.Id" method="post" class="d-inline-flex align-items-center gap-1">
+                                <select name="yeniDurum" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                                    @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                                    {
+                                        if (deger == odev.Durum)
+                                        {
+                                            <option value="@deger" selected>@deger.GosterimAdi()</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@deger">@deger.GosterimAdi()</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                            <a asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@odev.Id" method="post" class="d-inline" data-onay="Bu ödevi silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

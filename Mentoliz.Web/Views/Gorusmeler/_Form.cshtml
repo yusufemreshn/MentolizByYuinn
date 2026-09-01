@@ -1,0 +1,89 @@
+@model GorusmeFormViewModel
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <form method="post" id="gorusme-formu" class="d-flex flex-column gap-4">
+            <input type="hidden" asp-for="Gorusme.Id" />
+
+            <div class="rp-kart">
+                <h2 class="h6 mb-3">Görüşme Bilgileri</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Öğrenci</label>
+                        <select asp-for="Gorusme.OgrenciId" id="gorusme-ogrenci-secimi" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad"))">
+                            <option value="">Öğrenci seçin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tarih</label>
+                        <input asp-for="Gorusme.Tarih" type="date" class="form-control" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tür</label>
+                        <select asp-for="Gorusme.Tur" class="form-select">
+                            @foreach (var deger in Enum.GetValues<GorusmeTuru>())
+                            {
+                                <option value="@deger">@deger.GosterimAdi()</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Şablon</label>
+                        <select id="gorusme-sablon-secimi" class="form-select">
+                            <option value="">Şablon seçin (konu ve notları doldurur)</option>
+                        </select>
+                        <div class="form-text">Sadece boş alanları doldurur, elle girdiğiniz metnin üzerine yazmaz.</div>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Konu</label>
+                        <input asp-for="Gorusme.Konu" id="gorusme-konu" class="form-control" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Süre (dakika)</label>
+                        <input asp-for="Gorusme.Sure" type="number" min="1" max="480" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Notlar</label>
+                        <textarea asp-for="Gorusme.Notlar" id="gorusme-notlar" class="form-control" rows="4" required></textarea>
+                        <div class="form-text">Bu notlar veliye verilecek raporlara asla dahil edilmez.</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Alınan Karar</label>
+                        <textarea asp-for="Gorusme.AlinanKarar" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Sonraki Görüşme Tarihi</label>
+                        <input asp-for="Gorusme.SonrakiGorusmeTarihi" type="date" class="form-control" />
+                        <div class="form-text">Doldurulursa görev listesine otomatik hatırlatma eklenir.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="rp-kart" id="gorusme-ozet-paneli">
+            <h2 class="h6 mb-3"><i class="bi bi-info-circle"></i> Öğrenci Özeti</h2>
+            <p class="text-body-secondary small mb-0" id="gorusme-ozet-bos-mesaji">Özeti görmek için önce bir öğrenci seçin.</p>
+            <div id="gorusme-ozet-icerik" class="d-none">
+                <div class="mb-3">
+                    <div class="small text-body-secondary mb-1">Son Deneme Netleri</div>
+                    <div id="gorusme-ozet-netler" class="d-flex flex-column gap-1"></div>
+                </div>
+                <div class="mb-3">
+                    <div class="small text-body-secondary mb-1">Açık Ödev</div>
+                    <div id="gorusme-ozet-odev" class="fw-semibold"></div>
+                </div>
+                <div>
+                    <div class="small text-body-secondary mb-1">Önceki Görüşmede Alınan Karar</div>
+                    <div id="gorusme-ozet-karar" class="fw-semibold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

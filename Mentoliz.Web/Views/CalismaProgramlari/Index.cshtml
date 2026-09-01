@@ -1,0 +1,87 @@
+@model CalismaProgramiListeViewModel
+
+@{
+    ViewData["Title"] = "Çalışma Programı";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Öğrenci</label>
+            <select name="ogrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad", Model.OgrenciId))">
+                <option value="">Öğrenci seçin</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Göster</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.OgrenciId.HasValue)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-week", Mesaj = "Çalışma programı görmek için önce bir öğrenci seçin." })" />
+    </div>
+}
+else
+{
+    <div class="rp-kart mb-3">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <a asp-action="Ekle" asp-route-ogrenciId="@Model.OgrenciId" class="btn btn-outline-primary w-100"><i class="bi bi-plus-lg"></i> Yeni Boş Hafta</a>
+            </div>
+            <div class="col-md-5">
+                <form asp-action="OncekiHaftadanKopyala" method="post" class="row g-2 align-items-end">
+                    <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
+                    <div class="col-7">
+                        <label class="form-label">Yeni Haftanın Başlangıcı</label>
+                        <input type="date" name="haftaBaslangicTarihi" class="form-control" required />
+                    </div>
+                    <div class="col-5">
+                        <button type="submit" class="btn btn-outline-primary w-100">Önceki Haftadan Kopyala</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Programlar.Count == 0)
+    {
+        <div class="rp-kart">
+            <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-week", Mesaj = "Bu öğrenci için henüz çalışma programı yok." })" />
+        </div>
+    }
+    else
+    {
+        <div class="rp-tablo-sarici">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Hafta Başlangıcı</th>
+                        <th>Açıklama</th>
+                        <th>Satır Sayısı</th>
+                        <th>Gerçekleşme</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var program in Model.Programlar)
+                    {
+                        <tr>
+                            <td><a asp-action="Detay" asp-route-id="@program.Id">@program.HaftaBaslangicTarihi.ToString("dd.MM.yyyy")</a></td>
+                            <td>@(program.Aciklama ?? "-")</td>
+                            <td>@program.Satirlar.Count</td>
+                            <td>%@program.GerceklesmeYuzdesi</td>
+                            <td class="text-end">
+                                <form asp-action="Sil" asp-route-id="@program.Id" asp-route-ogrenciId="@Model.OgrenciId" method="post" class="d-inline" data-onay="Bu haftalık programı silmek istediğinize emin misiniz?">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

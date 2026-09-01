@@ -1,0 +1,57 @@
+@model DenemeAnaliziViewModel
+
+@{
+    ViewData["Title"] = "Deneme Analizi";
+}
+
+@foreach (var alanSonucu in Model.AlanBazliSonuclar)
+{
+    var alanKodu = alanSonucu.Alan.ToString().ToLowerInvariant();
+    // alan sınavının adı sayısal, eşit ağırlık ve sözel için ayt, dil için ydt oluyor, henüz sonuç girilmemişse de başlıkta doğru sınav adı görünsün diye ayrıca hesaplanıyor
+    var tytBasligi = alanSonucu.TytSonucu is not null
+        ? DenemeBasligiOlusturucu.Olustur(alanSonucu.TytSonucu.SinavTuruAdi, alanSonucu.TytSonucu.DenemeAdi)
+        : "TYT";
+    var alanSinaviBasligi = alanSonucu.AlanSinaviSonucu is not null
+        ? DenemeBasligiOlusturucu.Olustur(alanSonucu.AlanSinaviSonucu.SinavTuruAdi, alanSonucu.AlanSinaviSonucu.DenemeAdi)
+        : (alanSonucu.Alan == Alan.Dil ? "YDT" : "AYT");
+
+    <div class="rp-kart mb-3">
+        <h2 class="h6 mb-3">@alanSonucu.Alan.GosterimAdi()</h2>
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="small text-body-secondary mb-2">@tytBasligi</div>
+                @if (alanSonucu.TytSonucu is null || alanSonucu.TytSonucu.SinifOrtalamaNetleri.Count == 0)
+                {
+                    <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bar-chart", Mesaj = "Henüz deneme sonucu girilmemiş." })" />
+                }
+                else
+                {
+                    <div class="rp-grafik-alani">
+                        <canvas data-veri-id="alan-@(alanKodu)-tyt-verisi"></canvas>
+                    </div>
+                    <script type="application/json" id="alan-@(alanKodu)-tyt-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(alanSonucu.TytSonucu.SinifOrtalamaNetleri.Select(s => new { etiket = s.SinifAdi, net = s.OrtalamaNet })))</script>
+                }
+            </div>
+            <div class="col-lg-6">
+                <div class="small text-body-secondary mb-2">@alanSinaviBasligi</div>
+                @if (alanSonucu.AlanSinaviSonucu is null || alanSonucu.AlanSinaviSonucu.SinifOrtalamaNetleri.Count == 0)
+                {
+                    <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bar-chart", Mesaj = "Henüz deneme sonucu girilmemiş." })" />
+                }
+                else
+                {
+                    <div class="rp-grafik-alani">
+                        <canvas data-veri-id="alan-@(alanKodu)-alansinavi-verisi"></canvas>
+                    </div>
+                    <script type="application/json" id="alan-@(alanKodu)-alansinavi-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(alanSonucu.AlanSinaviSonucu.SinifOrtalamaNetleri.Select(s => new { etiket = s.SinifAdi, net = s.OrtalamaNet })))</script>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+    <script src="~/js/grafik-yardimcilari.js" asp-append-version="true"></script>
+    <script src="~/js/deneme-analizi.js" asp-append-version="true"></script>
+}

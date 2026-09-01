@@ -1,0 +1,22 @@
+@{
+    // controller'lar işlem sonucunu bu üç tempdata anahtarından biriyle bildiriyor, sayfa yenilense bile bir kere gösterilip kayboluyor
+    var basariMesaji = TempData["BasariMesaji"] as string;
+    var hataMesaji = TempData["HataMesaji"] as string;
+    var uyariMesaji = TempData["UyariMesaji"] as string;
+}
+
+@* burada ekrana hiçbir şey basmıyoruz, sadece veriyi bırakıyoruz, site.js sayfa yüklenince bunu okuyup sağ üstte toast olarak gösteriyor ve elementi kaldırıyor *@
+@if (!string.IsNullOrWhiteSpace(basariMesaji))
+{
+    <div class="rp-bildirim-verisi" data-tur="basarili" data-mesaj="@basariMesaji" hidden></div>
+}
+
+@if (!string.IsNullOrWhiteSpace(hataMesaji))
+{
+    <div class="rp-bildirim-verisi" data-tur="hata" data-mesaj="@hataMesaji" hidden></div>
+}
+
+@if (!string.IsNullOrWhiteSpace(uyariMesaji))
+{
+    <div class="rp-bildirim-verisi" data-tur="uyari" data-mesaj="@uyariMesaji" hidden></div>
+}

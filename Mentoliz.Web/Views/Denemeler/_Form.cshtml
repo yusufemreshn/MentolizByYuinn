@@ -1,0 +1,38 @@
+@model DenemeFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Deneme.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Deneme Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Deneme Adı</label>
+                <input asp-for="Deneme.Ad" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Sınav Türü</label>
+                <select asp-for="Deneme.SinavTuruId" class="form-select" asp-items="@(new SelectList(Model.SinavTuruSecenekleri, "Id", "Ad"))">
+                    <option value="">Sınav türü seçin</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tarih</label>
+                <input asp-for="Deneme.Tarih" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-8">
+                <label class="form-label">Yayın Adı</label>
+                <input asp-for="Deneme.YayinAdi" class="form-control" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Açıklama</label>
+                <textarea asp-for="Deneme.Aciklama" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

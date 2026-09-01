@@ -1,0 +1,66 @@
+@model IstisnaFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Istisna.Id" />
+    <input type="hidden" asp-for="Istisna.OgrenciId" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">@Model.OgrenciAdSoyad İçin Program İstisnası</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Gün</label>
+                <select asp-for="Istisna.Gun" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Gun>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Başlangıç Saati</label>
+                <input asp-for="Istisna.BaslangicSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bitiş Saati</label>
+                <input asp-for="Istisna.BitisSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Tür</label>
+                <select asp-for="Istisna.Tur" class="form-select">
+                    @foreach (var deger in Enum.GetValues<ProgramIstisnaTuru>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Ders</label>
+                <select asp-for="Istisna.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Ders yok</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Öğretmen</label>
+                <input asp-for="Istisna.OgretmenAdi" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Başlangıç Tarihi</label>
+                <input asp-for="Istisna.BaslangicTarihi" type="date" class="form-control" />
+                <div class="form-text">Boş bırakılırsa süresiz kabul edilir.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Bitiş Tarihi</label>
+                <input asp-for="Istisna.BitisTarihi" type="date" class="form-control" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Açıklama</label>
+                <textarea asp-for="Istisna.Aciklama" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Detay" asp-route-id="@Model.Istisna.OgrenciId" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

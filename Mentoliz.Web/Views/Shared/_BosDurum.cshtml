@@ -1,0 +1,10 @@
+@model Mentoliz.Web.ViewModels.BosDurumViewModel
+
+<div class="rp-bos-durum">
+    <i class="bi @Model.Ikon"></i>
+    <p>@Model.Mesaj</p>
+    @if (!string.IsNullOrWhiteSpace(Model.EylemBaslik) && !string.IsNullOrWhiteSpace(Model.EylemUrl))
+    {
+        <a href="@Model.EylemUrl" class="btn btn-sm btn-outline-primary mt-2">@Model.EylemBaslik</a>
+    }
+</div>

@@ -1,0 +1,46 @@
+@model SinifFormViewModel
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="Sinif.Id" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Sınıf Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Sınıf Adı</label>
+                <input asp-for="Sinif.Ad" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Seviye</label>
+                <select asp-for="Sinif.Seviye" class="form-select">
+                    @foreach (var deger in Enum.GetValues<SinifSeviyesi>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Alan</label>
+                <select asp-for="Sinif.Alan" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Alan>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Kontenjan</label>
+                <input asp-for="Sinif.Kontenjan" type="number" min="0" class="form-control" />
+            </div>
+            <div class="col-12 form-check">
+                <input asp-for="Sinif.AktifMi" class="form-check-input" />
+                <label class="form-check-label" asp-for="Sinif.AktifMi">Aktif sınıf</label>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

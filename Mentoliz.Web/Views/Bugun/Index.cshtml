@@ -1,0 +1,108 @@
+@model BugunIndexViewModel
+
+@{
+    ViewData["Title"] = "Bugün";
+    var donusUrl = Url.Action("Index", "Bugun");
+}
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3"><i class="bi bi-check2-square"></i> Bugünkü Görevler</h2>
+            @if (Model.BugunkuGorevler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-check2-circle", Mesaj = "Bugün için açık görev yok." })" />
+            }
+            else
+            {
+                <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                    @foreach (var gorev in Model.BugunkuGorevler)
+                    {
+                        <li class="d-flex justify-content-between align-items-start border-bottom pb-2">
+                            <div>
+                                <div class="fw-semibold">@gorev.Baslik</div>
+                                @if (!string.IsNullOrWhiteSpace(gorev.OgrenciAdSoyad))
+                                {
+                                    <div class="text-body-secondary small">@gorev.OgrenciAdSoyad</div>
+                                }
+                            </div>
+                            <form asp-controller="Gorevler" asp-action="Tamamlandi" asp-route-id="@gorev.Id" asp-route-donusUrl="@donusUrl" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Tamamlandı işaretle"><i class="bi bi-check2"></i></button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3"><i class="bi bi-journal-text"></i> Bugün Teslim Olan Ödevler</h2>
+            @if (Model.BugunTeslimOdevler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-check", Mesaj = "Bugün teslim tarihi olan ödev yok." })" />
+            }
+            else
+            {
+                <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                    @foreach (var odev in Model.BugunTeslimOdevler)
+                    {
+                        var rozetSinifi = odev.Durum switch
+                        {
+                            OdevDurumu.Tamamlandi => "rp-rozet-basari",
+                            OdevDurumu.Gecikti => "rp-rozet-tehlike",
+                            OdevDurumu.EksikTamamlandi => "rp-rozet-uyari",
+                            OdevDurumu.Yapilmadi => "rp-rozet-tehlike",
+                            _ => "rp-rozet-notr"
+                        };
+
+                        <li class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                            <div>
+                                <div class="fw-semibold">@odev.OgrenciAdSoyad</div>
+                                <div class="text-body-secondary small">@odev.DersAdi — @odev.KonuBasligi</div>
+                            </div>
+                            <form asp-controller="Odevler" asp-action="DurumGuncelle" asp-route-id="@odev.Id" asp-route-donusUrl="@donusUrl" method="post">
+                                <select name="yeniDurum" class="form-select form-select-sm rp-rozet-secim @rozetSinifi" onchange="this.form.submit()">
+                                    @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                                    {
+                                        if (deger == odev.Durum)
+                                        {
+                                            <option value="@deger" selected>@deger.GosterimAdi()</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@deger">@deger.GosterimAdi()</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="rp-kart">
+            <h2 class="h6 mb-3"><i class="bi bi-exclamation-triangle text-danger"></i> İhmal Edilen Öğrenciler (60 gün ve üzeri)</h2>
+            @if (Model.IhmalEdilenOgrenciler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-emoji-smile", Mesaj = "İhmal edilen öğrenci yok." })" />
+            }
+            else
+            {
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var ogrenci in Model.IhmalEdilenOgrenciler)
+                    {
+                        <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@ogrenci.OgrenciId" class="rp-rozet rp-rozet-tehlike text-decoration-none">
+                            @ogrenci.OgrenciAdSoyad
+                            @(ogrenci.GecenGunSayisi.HasValue ? $"({ogrenci.GecenGunSayisi} gün)" : "(hiç görüşülmedi)")
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

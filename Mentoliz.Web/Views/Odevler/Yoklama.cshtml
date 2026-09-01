@@ -1,0 +1,93 @@
+@model OdevYoklamaViewModel
+
+@{
+    ViewData["Title"] = "Ödev Yoklaması";
+    var seciliAtama = Model.TopluAtamalar.FirstOrDefault(t => t.Id == Model.SeciliTopluAtamaId);
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" class="row g-2 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label">Toplu Ödev Ataması</label>
+            <select name="topluAtamaId" class="form-select" onchange="this.form.submit()">
+                <option value="">Atama seçin</option>
+                @foreach (var atama in Model.TopluAtamalar)
+                {
+                    if (atama.Id == Model.SeciliTopluAtamaId)
+                    {
+                        <option value="@atama.Id" selected>@atama.SinifAdi — @atama.Baslik (@atama.VerilisTarihi.ToString("dd.MM.yyyy"))</option>
+                    }
+                    else
+                    {
+                        <option value="@atama.Id">@atama.SinifAdi — @atama.Baslik (@atama.VerilisTarihi.ToString("dd.MM.yyyy"))</option>
+                    }
+                }
+            </select>
+        </div>
+    </form>
+</div>
+
+@if (seciliAtama is null)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-grid-3x3-gap", Mesaj = "Yoklamak için önce bir toplu ödev ataması seçin." })" />
+    </div>
+}
+else if (Model.Odevler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-grid-3x3-gap", Mesaj = "Bu atamaya bağlı ödev kaydı bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="mb-3">
+        <span class="fw-semibold">@seciliAtama.DersAdi</span>
+        <span class="text-body-secondary">— @seciliAtama.Baslik, son teslim @seciliAtama.SonTeslimTarihi.ToString("dd.MM.yyyy")</span>
+    </div>
+
+    <div class="rp-tablo-sarici">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Öğrenci</th>
+                    <th style="width: 220px;">Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var odev in Model.Odevler.OrderBy(o => o.OgrenciAdSoyad))
+                {
+                    var rozetSinifi = odev.Durum switch
+                    {
+                        OdevDurumu.Tamamlandi => "rp-rozet-basari",
+                        OdevDurumu.Gecikti => "rp-rozet-tehlike",
+                        OdevDurumu.EksikTamamlandi => "rp-rozet-uyari",
+                        OdevDurumu.Yapilmadi => "rp-rozet-tehlike",
+                        _ => "rp-rozet-notr"
+                    };
+
+                    <tr>
+                        <td>@odev.OgrenciAdSoyad</td>
+                        <td>
+                            <form asp-action="DurumGuncelle" asp-route-id="@odev.Id" asp-route-donusUrl="@(Url.Action("Yoklama", new { topluAtamaId = Model.SeciliTopluAtamaId }))" method="post">
+                                <select name="yeniDurum" class="form-select form-select-sm rp-rozet-secim @rozetSinifi" onchange="this.form.submit()">
+                                    @foreach (var deger in Enum.GetValues<OdevDurumu>())
+                                    {
+                                        if (deger == odev.Durum)
+                                        {
+                                            <option value="@deger" selected>@deger.GosterimAdi()</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@deger">@deger.GosterimAdi()</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

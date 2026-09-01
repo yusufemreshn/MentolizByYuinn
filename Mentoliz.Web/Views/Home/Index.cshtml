@@ -1,0 +1,236 @@
+@model Mentoliz.Web.ViewModels.HomeIndexViewModel
+
+@{
+    ViewData["Title"] = "Ana Sayfa";
+}
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="rp-kart d-flex align-items-center gap-3">
+            <div class="rp-kart-ikon"><i class="bi bi-people"></i></div>
+            <div>
+                <div class="rp-kart-baslik">Toplam Öğrenci</div>
+                <div class="rp-kart-deger">@Model.ToplamOgrenciSayisi</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="rp-kart d-flex align-items-center gap-3">
+            <div class="rp-kart-ikon"><i class="bi bi-chat-dots"></i></div>
+            <div>
+                <div class="rp-kart-baslik">Bugün Görüşülecek</div>
+                <div class="rp-kart-deger">@Model.BugunGorusulecekSayisi</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="rp-kart d-flex align-items-center gap-3">
+            <div class="rp-kart-ikon rp-kart-ikon-uyari"><i class="bi bi-exclamation-triangle"></i></div>
+            <div>
+                <div class="rp-kart-baslik">Geciken Ödev</div>
+                <div class="rp-kart-deger">@Model.GecikenOdevSayisi</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="rp-kart d-flex align-items-center gap-3">
+            <div class="rp-kart-ikon"><i class="bi bi-clipboard-data"></i></div>
+            <div>
+                <div class="rp-kart-baslik">Bu Hafta Girilen Deneme</div>
+                <div class="rp-kart-deger">@Model.BuHaftaGirilenDenemeSayisi</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.DikkatGerektirenOgrenciler.Count > 0)
+{
+    <div class="rp-kart mb-3">
+        <h2 class="h6 mb-3"><i class="bi bi-shield-exclamation text-danger"></i> Bu Hafta Dikkat Gerektiren Öğrenciler</h2>
+        <div class="row g-2">
+            @foreach (var risk in Model.DikkatGerektirenOgrenciler)
+            {
+                var yuksekRiskliMi = risk.RiskPuani >= 50;
+                <div class="col-md-6 col-xl-3">
+                    <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@risk.OgrenciId" class="rp-risk-karti text-decoration-none">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <span class="fw-semibold text-body">@risk.OgrenciAdSoyad</span>
+                            <span class="rp-rozet @(yuksekRiskliMi ? "rp-rozet-tehlike" : "rp-rozet-uyari")">@risk.RiskPuani</span>
+                        </div>
+                        <div class="rp-risk-sebep">@RiskAciklamaOlusturucu.BaskinSebep(risk)</div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="row g-3 mb-3 align-items-stretch">
+    <div class="col-lg-7">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3">Yaklaşan Son Teslim Tarihleri</h2>
+            @if (Model.YaklasanTeslimTarihleri.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-check", Mesaj = "Yaklaşan teslim tarihi yok.", EylemBaslik = "Ödev Ekle", EylemUrl = Url.Action("Ekle", "Odevler") })" />
+            }
+            else
+            {
+                <div class="rp-tablo-sarici">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Öğrenci</th>
+                                <th>Ders</th>
+                                <th class="rp-sayisal">Son Teslim</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var odev in Model.YaklasanTeslimTarihleri)
+                            {
+                                <tr>
+                                    <td>@odev.OgrenciAdSoyad</td>
+                                    <td>@odev.DersAdi</td>
+                                    <td class="rp-sayisal">@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3">Bugün Görüşülecek Öğrenciler</h2>
+            @if (Model.BugunkuGorevler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-chat-dots", Mesaj = "Bugün için planlanmış görüşme yok.", EylemBaslik = "Görev Ekle", EylemUrl = Url.Action("Ekle", "Gorevler") })" />
+            }
+            else
+            {
+                <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+                    @foreach (var gorev in Model.BugunkuGorevler)
+                    {
+                        <li class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="fw-semibold">@gorev.OgrenciAdSoyad</div>
+                                <div class="text-body-secondary small">@gorev.Baslik</div>
+                            </div>
+                            <a asp-controller="Gorevler" asp-action="Duzenle" asp-route-id="@gorev.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.UzunSureGorusulmeyenler.Count > 0)
+{
+    <div class="rp-kart mb-3">
+        <h2 class="h6 mb-3"><i class="bi bi-exclamation-triangle text-warning"></i> Uzun Süredir Görüşülmeyen Öğrenciler</h2>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var ogrenci in Model.UzunSureGorusulmeyenler)
+            {
+                <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@ogrenci.OgrenciId" class="rp-rozet rp-rozet-uyari text-decoration-none">
+                    @ogrenci.OgrenciAdSoyad
+                    @(ogrenci.GecenGunSayisi.HasValue ? $"({ogrenci.GecenGunSayisi} gün)" : "(hiç görüşülmedi)")
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<div class="row g-3 mb-3 align-items-stretch">
+    <div class="col-lg-7">
+        <div class="rp-kart h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h2 class="h6 mb-0">
+                    Sınıf Bazlı Ortalama Net
+                    @if (Model.SinifOrtalamaNetSonucu is not null)
+                    {
+                        <text> (@DenemeBasligiOlusturucu.Olustur(Model.SinifOrtalamaNetSonucu.SinavTuruAdi, Model.SinifOrtalamaNetSonucu.DenemeAdi))</text>
+                    }
+                </h2>
+                <a asp-controller="Denemeler" asp-action="Analiz" class="small text-decoration-none text-nowrap ms-2">Daha fazlası için tıkla <i class="bi bi-arrow-right"></i></a>
+            </div>
+            @if (Model.SinifOrtalamaNetSonucu is null || Model.SinifOrtalamaNetSonucu.SinifOrtalamaNetleri.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-bar-chart", Mesaj = "Henüz deneme sonucu girilmemiş.", EylemBaslik = "Deneme Ekle", EylemUrl = Url.Action("Ekle", "Denemeler") })" />
+            }
+            else
+            {
+                <div class="rp-grafik-alani">
+                    <canvas id="sinif-ortalama-net-grafigi"></canvas>
+                </div>
+                <script type="application/json" id="sinif-ortalama-net-verisi">@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SinifOrtalamaNetSonucu.SinifOrtalamaNetleri.Select(s => new { etiket = s.SinifAdi, net = s.OrtalamaNet })))</script>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="rp-kart h-100 d-flex flex-column">
+            <h2 class="h6 mb-3">Haftalık Ödev Tamamlama Oranı</h2>
+            <div class="flex-grow-1 d-flex align-items-center">
+                <div class="rp-halka-alani">
+                    <canvas id="odev-tamamlama-grafigi"></canvas>
+                    <div class="rp-halka-merkez">
+                        <div class="rp-halka-yuzde">%@Model.HaftalikOdevTamamlamaOrani</div>
+                        <div class="rp-halka-etiket">Tamamlandı</div>
+                    </div>
+                </div>
+            </div>
+            <script type="application/json" id="odev-tamamlama-orani-verisi">@Model.HaftalikOdevTamamlamaOrani</script>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 align-items-stretch">
+    <div class="col-lg-6">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3"><i class="bi bi-graph-up-arrow text-success"></i> Son Denemede En Çok Yükselenler</h2>
+            @if (Model.SonDenemeNetDegisimOzeti.EnCokYukselenler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-graph-up-arrow", Mesaj = "Karşılaştırılacak yeterli deneme yok." })" />
+            }
+            else
+            {
+                <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                    @foreach (var ogrenci in Model.SonDenemeNetDegisimOzeti.EnCokYukselenler)
+                    {
+                        <li class="d-flex justify-content-between">
+                            <span>@ogrenci.OgrenciAdSoyad</span>
+                            <span class="rp-rozet rp-rozet-basari"><i class="bi bi-arrow-up-short"></i>@ogrenci.Degisim</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="rp-kart h-100">
+            <h2 class="h6 mb-3"><i class="bi bi-graph-down-arrow text-danger"></i> Son Denemede En Çok Düşenler</h2>
+            @if (Model.SonDenemeNetDegisimOzeti.EnCokDusenler.Count == 0)
+            {
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-graph-down-arrow", Mesaj = "Karşılaştırılacak yeterli deneme yok." })" />
+            }
+            else
+            {
+                <ul class="list-unstyled d-flex flex-column gap-2 mb-0">
+                    @foreach (var ogrenci in Model.SonDenemeNetDegisimOzeti.EnCokDusenler)
+                    {
+                        <li class="d-flex justify-content-between">
+                            <span>@ogrenci.OgrenciAdSoyad</span>
+                            <span class="rp-rozet rp-rozet-tehlike"><i class="bi bi-arrow-down-short"></i>@ogrenci.Degisim</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chart.js/dist/chart.umd.js"></script>
+    <script src="~/js/grafik-yardimcilari.js" asp-append-version="true"></script>
+    <script src="~/js/anasayfa.js" asp-append-version="true"></script>
+}

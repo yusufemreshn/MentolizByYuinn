@@ -1,0 +1,43 @@
+@model TopluAtamaFormViewModel
+
+@{
+    ViewData["Title"] = "Sınıfa Toplu Ödev Ver";
+}
+
+<form method="post" class="d-flex flex-column gap-4">
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Toplu Ödev Bilgileri</h2>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Sınıf</label>
+                <select asp-for="TopluAtama.SinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad"))">
+                    <option value="">Sınıf seçin</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Ders</label>
+                <select asp-for="TopluAtama.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Ders seçin</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Başlık</label>
+                <input asp-for="TopluAtama.Baslik" class="form-control" required />
+                <div class="form-text">Bu başlık, sınıftaki her öğrencinin ödev kaydında konu başlığı olarak görünecek.</div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Veriliş Tarihi</label>
+                <input asp-for="TopluAtama.VerilisTarihi" type="date" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Son Teslim Tarihi</label>
+                <input asp-for="TopluAtama.SonTeslimTarihi" type="date" class="form-control" required />
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Sınıfa Ver</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

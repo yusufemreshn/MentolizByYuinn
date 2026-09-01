@@ -1,0 +1,116 @@
+@model GorevListeViewModel
+
+@{
+    ViewData["Title"] = "Görevler";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Öğrenci</label>
+            <select name="ogrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad", Model.OgrenciId))">
+                <option value="">Tümü</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Durum</label>
+            <select name="tamamlandiMi" class="form-select">
+                @if (Model.TamamlandiMi is null)
+                {
+                    <option value="" selected>Tümü</option>
+                    <option value="false">Açık</option>
+                    <option value="true">Tamamlanan</option>
+                }
+                else if (Model.TamamlandiMi == false)
+                {
+                    <option value="">Tümü</option>
+                    <option value="false" selected>Açık</option>
+                    <option value="true">Tamamlanan</option>
+                }
+                else
+                {
+                    <option value="">Tümü</option>
+                    <option value="false">Açık</option>
+                    <option value="true" selected>Tamamlanan</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filtrele</button>
+            <a asp-action="Ekle" class="btn btn-outline-primary flex-grow-1"><i class="bi bi-plus-lg"></i> Ekle</a>
+        </div>
+    </form>
+</div>
+
+@if (Model.Gorevler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-check2-square", Mesaj = "Aramanıza uyan görev bulunamadı." })" />
+    </div>
+}
+else
+{
+    <div class="rp-tablo-sarici">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Başlık</th>
+                    <th>Öğrenci</th>
+                    <th>Öncelik</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gorev in Model.Gorevler)
+                {
+                    var oncelikSinifi = gorev.Oncelik switch
+                    {
+                        GorevOnceligi.Yuksek => "rp-rozet-tehlike",
+                        GorevOnceligi.Normal => "rp-rozet-uyari",
+                        _ => "rp-rozet-notr"
+                    };
+
+                    <tr>
+                        <td>@gorev.Tarih.ToString("dd.MM.yyyy")</td>
+                        <td>@gorev.Baslik</td>
+                        <td>
+                            @if (gorev.OgrenciId.HasValue)
+                            {
+                                <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@gorev.OgrenciId">@gorev.OgrenciAdSoyad</a>
+                            }
+                            else
+                            {
+                                <span class="text-body-secondary">-</span>
+                            }
+                        </td>
+                        <td><span class="rp-rozet @oncelikSinifi">@gorev.Oncelik.GosterimAdi()</span></td>
+                        <td>
+                            @if (gorev.TamamlandiMi)
+                            {
+                                <span class="rp-rozet rp-rozet-basari">Tamamlandı</span>
+                            }
+                            else
+                            {
+                                <span class="rp-rozet rp-rozet-notr">Açık</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            @if (!gorev.TamamlandiMi)
+                            {
+                                <form asp-action="Tamamlandi" asp-route-id="@gorev.Id" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                            }
+                            <a asp-action="Duzenle" asp-route-id="@gorev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Sil" asp-route-id="@gorev.Id" method="post" class="d-inline" data-onay="Bu görevi silmek istediğinize emin misiniz?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

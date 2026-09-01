@@ -1,0 +1,47 @@
+@model CalismaSatirFormViewModel
+
+@{
+    ViewData["Title"] = "Çalışma Satırı Ekle";
+}
+
+<form method="post" class="d-flex flex-column gap-4">
+    <input type="hidden" asp-for="CalismaProgramiId" />
+
+    <div class="rp-kart">
+        <h2 class="h6 mb-3">Çalışma Satırı</h2>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Gün</label>
+                <select asp-for="Satir.Gun" class="form-select">
+                    @foreach (var deger in Enum.GetValues<Gun>())
+                    {
+                        <option value="@deger">@deger.GosterimAdi()</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Başlangıç Saati</label>
+                <input asp-for="Satir.BaslangicSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bitiş Saati</label>
+                <input asp-for="Satir.BitisSaati" type="time" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Ders</label>
+                <select asp-for="Satir.DersId" class="form-select" asp-items="@(new SelectList(Model.DersSecenekleri, "Id", "Ad"))">
+                    <option value="">Serbest çalışma</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Açıklama</label>
+                <input asp-for="Satir.Aciklama" class="form-control" placeholder="Örn: test çözümü, konu tekrarı" />
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <a asp-action="Detay" asp-route-id="@Model.CalismaProgramiId" class="btn btn-outline-secondary">Vazgeç</a>
+    </div>
+</form>

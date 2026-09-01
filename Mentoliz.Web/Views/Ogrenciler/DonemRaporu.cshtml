@@ -1,0 +1,150 @@
+@model DonemRaporuViewModel
+
+@{
+    ViewData["Title"] = $"{Model.Ogrenci.AdSoyad} - Dönem Sonu Değerlendirme Raporu";
+    Layout = "_RaporLayout";
+}
+
+<div class="no-print mb-3">
+    <form method="get" asp-action="DonemRaporu" asp-route-id="@Model.Ogrenci.Id" class="row g-2 align-items-end">
+        <div class="col-auto">
+            <label class="form-label small mb-0">Dönem Başlangıcı</label>
+            <input type="date" name="baslangic" class="form-control form-control-sm" value="@Model.Degerlendirme.DonemBaslangic.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <label class="form-label small mb-0">Dönem Bitişi</label>
+            <input type="date" name="bitis" class="form-control form-control-sm" value="@Model.Degerlendirme.DonemBitis.ToString("yyyy-MM-dd")" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-sm btn-outline-primary">Dönemi Uygula</button>
+        </div>
+    </form>
+</div>
+
+<div class="rp-rapor-baslik">
+    <div>
+        <h1>@Model.Ogrenci.AdSoyad</h1>
+        <div class="text-body-secondary">
+            @(Model.Ogrenci.SinifAdi ?? "Sınıfsız")
+            @(string.IsNullOrWhiteSpace(Model.Ogrenci.OgrenciNo) ? "" : $"· Öğrenci No: {Model.Ogrenci.OgrenciNo}")
+        </div>
+    </div>
+    <div class="rp-rapor-tarih">
+        Dönem Sonu Değerlendirme Raporu<br />
+        @Model.Degerlendirme.DonemBaslangic.ToString("dd.MM.yyyy") - @Model.Degerlendirme.DonemBitis.ToString("dd.MM.yyyy")<br />
+        @Model.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")
+    </div>
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Genel Değerlendirme</h2>
+    <div class="rp-rapor-yorum-alani">@Model.Degerlendirme.OtomatikYorum</div>
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Deneme Sonuçları</h2>
+    @if (Model.Degerlendirme.DenemeSayisi == 0)
+    {
+        <p class="text-body-secondary small">Bu dönemde deneme sonucu girilmemiş.</p>
+    }
+    else
+    {
+        <div class="rp-rapor-ozet-grid mb-3">
+            <div class="rp-rapor-ozet-kutu">
+                <div class="baslik">Dönemdeki Deneme Sayısı</div>
+                <div class="deger">@Model.Degerlendirme.DenemeSayisi</div>
+            </div>
+            <div class="rp-rapor-ozet-kutu">
+                <div class="baslik">Dönem Başı Toplam Net</div>
+                <div class="deger">@(Model.Degerlendirme.DonemIlkToplamNet?.ToString("0.##") ?? "-")</div>
+            </div>
+            <div class="rp-rapor-ozet-kutu">
+                <div class="baslik">Dönem Sonu Toplam Net</div>
+                <div class="deger">@(Model.Degerlendirme.DonemSonToplamNet?.ToString("0.##") ?? "-")</div>
+            </div>
+        </div>
+
+        @if (Model.Degerlendirme.DersKarsilastirmalari.Count > 0)
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ders</th>
+                        <th>Dönem Başı Net</th>
+                        <th>Dönem Sonu Net</th>
+                        <th>Değişim</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var karsilastirma in Model.Degerlendirme.DersKarsilastirmalari)
+                    {
+                        <tr>
+                            <td>@karsilastirma.DersAdi</td>
+                            <td>@karsilastirma.OncekiNet.ToString("0.##")</td>
+                            <td>@karsilastirma.SonrakiNet.ToString("0.##")</td>
+                            <td>@(karsilastirma.Degisim >= 0 ? "+" : "")@karsilastirma.Degisim.ToString("0.##")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+</div>
+
+<div class="rp-rapor-bolum">
+    <h2>Ödev Tamamlama</h2>
+    <div class="rp-rapor-ozet-grid">
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Dönemdeki Ödev</div>
+            <div class="deger">@Model.Degerlendirme.OdevSayisi</div>
+        </div>
+        <div class="rp-rapor-ozet-kutu">
+            <div class="baslik">Tamamlama Oranı</div>
+            <div class="deger">%@Model.Degerlendirme.OdevTamamlamaOrani</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Degerlendirme.HedefKarsilastirma is not null && Model.Degerlendirme.HedefKarsilastirma.DersKarsilastirmalari.Count > 0)
+{
+    <div class="rp-rapor-bolum">
+        <h2>Hedefe Uzaklık</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ders</th>
+                    <th>Hedef Net</th>
+                    <th>Güncel Net</th>
+                    <th>Uzaklık</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var karsilastirma in Model.Degerlendirme.HedefKarsilastirma.DersKarsilastirmalari)
+                {
+                    <tr>
+                        <td>@karsilastirma.DersAdi</td>
+                        <td>@karsilastirma.HedefNet.ToString("0.##")</td>
+                        <td>@(karsilastirma.GuncelNet?.ToString("0.##") ?? "-")</td>
+                        <td>@(karsilastirma.Uzaklik?.ToString("0.##") ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="rp-rapor-bolum">
+    <h2>Görüşme Özeti</h2>
+    @if (Model.Degerlendirme.GorusmeSayisi == 0)
+    {
+        <p class="text-body-secondary small">Bu dönemde görüşme kaydı yok.</p>
+    }
+    else
+    {
+        <p class="small mb-1">Bu dönemde toplam <strong>@Model.Degerlendirme.GorusmeSayisi</strong> görüşme yapıldı.</p>
+        @if (!string.IsNullOrWhiteSpace(Model.Degerlendirme.SonAlinanKarar))
+        {
+            <p class="small mb-0">Son alınan karar: @Model.Degerlendirme.SonAlinanKarar</p>
+        }
+    }
+</div>

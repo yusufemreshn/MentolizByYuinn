@@ -1,0 +1,39 @@
+# derleme çıktıları
+bin/
+obj/
+
+# visual studio ve rider kullanıcı dosyaları
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# yayınlama çıktısı
+publish/
+Surumler/
+*.pubxml
+*.pubxml.user
+
+# veritabanı dosyası ve yedekler, gerçek öğrenci verisi içerdiği için depoya asla girmeyecek
+*.db
+*.db-shm
+*.db-wal
+Mentoliz.Web/App_Data/
+Yedekler/
+
+# ntfs klasör başlıkları
+[Dd]esktop.ini
+
+# node tabanlı araçlar kullanılırsa diye
+node_modules/
+
+# iç kullanım notları, depoya girmesin
+CLAUDE.md
+PROJE-PROMPTU.md
+
+# eski isimlendirmeyle kalan tam proje yedeği
+rehberlikproje-yedek-20260821_161515/
+
+# ikon tasarımı için kullanılan büyük kaynak görsel, README'de kullanılmıyor
+projeikonfotograf.jpg

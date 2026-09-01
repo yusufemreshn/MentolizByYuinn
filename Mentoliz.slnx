@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Mentoliz.Business/Mentoliz.Business.csproj" />
+  <Project Path="Mentoliz.DataAccess/Mentoliz.DataAccess.csproj" />
+  <Project Path="Mentoliz.Entities/Mentoliz.Entities.csproj" />
+  <Project Path="Mentoliz.Web/Mentoliz.Masaustu/Mentoliz.Masaustu.csproj" />
+  <Project Path="Mentoliz.Web/Mentoliz.Web.csproj" />
+</Solution>

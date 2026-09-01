@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mentoliz.Business\Mentoliz.Business.csproj" />
+    <ProjectReference Include="..\Mentoliz.Entities\Mentoliz.Entities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- masaustu kabuğu kendi projesi olarak burada duruyor, web'in derlemesine karışmasın -->
+    <Compile Remove="Mentoliz.Masaustu\**" />
+    <Content Remove="Mentoliz.Masaustu\**" />
+    <None Remove="Mentoliz.Masaustu\**" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>mentoliz.ico</ApplicationIcon>
+  </PropertyGroup>
+
+</Project>

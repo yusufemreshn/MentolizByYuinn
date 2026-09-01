@@ -1,0 +1,106 @@
+@model KonuTakipViewModel
+
+@{
+    ViewData["Title"] = "Konu Takip Haritası";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Takip" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Öğrenci</label>
+            <select name="ogrenciId" class="form-select" asp-items="@(new SelectList(Model.OgrenciSecenekleri, "Id", "AdSoyad", Model.OgrenciId))">
+                <option value="">Öğrenci seçin</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Göster</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.OgrenciId.HasValue)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-grid-3x3-gap", Mesaj = "Konu takip haritasını görmek için önce bir öğrenci seçin." })" />
+    </div>
+}
+else
+{
+    @if (Model.ZayifKonuOnerileri.Count > 0)
+    {
+        <div class="rp-kart mb-3">
+            <h3 class="h6 mb-3">Zayıf Alanlara Göre Önerilen Konular</h3>
+            <div class="text-body-secondary small mb-2">Son deneme sonuçlarında zayıf çıkan derslerden, henüz tamamlanmamış veya tekrar gereken konular.</div>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var oneri in Model.ZayifKonuOnerileri)
+                {
+                    <span class="rp-rozet rp-rozet-uyari">@oneri.DersAdi · @oneri.Ad</span>
+                }
+            </div>
+        </div>
+    }
+
+    @if (Model.DersIlerlemeleri.Count > 0)
+    {
+        <div class="rp-kart mb-3">
+            <h3 class="h6 mb-3">Ders Bazlı İlerleme</h3>
+            <div class="d-flex flex-column gap-2">
+                @foreach (var ilerleme in Model.DersIlerlemeleri)
+                {
+                    <div>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>@ilerleme.DersAdi</span>
+                            <span class="text-body-secondary">@ilerleme.TamamlananKonuSayisi / @ilerleme.ToplamKonuSayisi · %@ilerleme.IlerlemeYuzdesi</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @(ilerleme.IlerlemeYuzdesi)%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="rp-kart">
+        <h3 class="h6 mb-3">Konu Durumları</h3>
+        @foreach (var dersGrubu in Model.Takipler.GroupBy(t => t.DersAdi))
+        {
+            <div class="mb-4">
+                <div class="fw-semibold mb-2">@dersGrubu.Key</div>
+                <div class="d-flex flex-wrap gap-2">
+                    @foreach (var takip in dersGrubu)
+                    {
+                        var arkaplanSinifi = takip.Durum switch
+                        {
+                            KonuTakipDurumu.Tamamlandi => "bg-success-subtle",
+                            KonuTakipDurumu.TekrarGerekli => "bg-danger-subtle",
+                            KonuTakipDurumu.DevamEdiyor => "bg-warning-subtle",
+                            _ => "bg-secondary-subtle"
+                        };
+
+                        <div class="p-2 rounded @arkaplanSinifi" style="min-width: 170px;">
+                            <div class="small fw-semibold mb-1">@takip.KonuAdi</div>
+                            <form asp-action="DurumIsaretle" method="post">
+                                <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
+                                <input type="hidden" name="konuId" value="@takip.KonuId" />
+                                <select name="durum" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    @foreach (var deger in Enum.GetValues<KonuTakipDurumu>())
+                                    {
+                                        if (deger == takip.Durum)
+                                        {
+                                            <option value="@deger" selected>@deger.GosterimAdi()</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@deger">@deger.GosterimAdi()</option>
+                                        }
+                                    }
+                                </select>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
