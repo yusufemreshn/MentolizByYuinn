@@ -47,16 +47,17 @@
                 <div class="rp-takvim-gun @(buAydaMi ? "" : "rp-takvim-gun-disi") @(bugunMu ? "rp-takvim-bugun" : "")">
                     <div class="rp-takvim-gun-no">@gun.Day</div>
                     <div class="rp-takvim-oge-listesi">
-                        @foreach (var oge in gununOgeleri.Take(4))
+                        @for (var i = 0; i < gununOgeleri.Count; i++)
                         {
-                            <a href="@OgeUrlOlustur(oge)" class="rp-takvim-oge rp-takvim-oge-@oge.Tur" title="@oge.Baslik">
+                            var oge = gununOgeleri[i];
+                            <a href="@OgeUrlOlustur(oge)" class="rp-takvim-oge rp-takvim-oge-@oge.Tur @(i >= 4 ? "rp-takvim-oge-gizli d-none" : "")" title="@oge.Baslik">
                                 <i class="bi @ZamanTuneliGorunumOlusturucu.Ikon(oge.Tur)"></i>
                                 <span>@oge.Baslik</span>
                             </a>
                         }
                         @if (gununOgeleri.Count > 4)
                         {
-                            <div class="rp-takvim-fazla">+@(gununOgeleri.Count - 4) daha</div>
+                            <button type="button" class="rp-takvim-fazla">+@(gununOgeleri.Count - 4) daha</button>
                         }
                     </div>
                 </div>
@@ -64,3 +65,7 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script src="~/js/takvim.js" asp-append-version="true"></script>
+}

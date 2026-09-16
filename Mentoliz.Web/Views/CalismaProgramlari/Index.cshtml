@@ -75,7 +75,7 @@ else
                             <td>%@program.GerceklesmeYuzdesi</td>
                             <td class="text-end">
                                 <form asp-action="Sil" asp-route-id="@program.Id" asp-route-ogrenciId="@Model.OgrenciId" method="post" class="d-inline" data-onay="Bu haftalık programı silmek istediğinize emin misiniz?">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                 </form>
                             </td>
                         </tr>

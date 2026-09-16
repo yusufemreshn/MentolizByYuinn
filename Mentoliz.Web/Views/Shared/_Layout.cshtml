@@ -1,13 +1,30 @@
 @{
-    // sol menüde hangi öğenin aktif göründüğünü belirlemek için şu anki controller adını alıyoruz
+    // üst menüde, alt sekme çubuğunda ve diğer panelinde hangi öğenin aktif göründüğünü belirlemek için şu anki controller adını alıyoruz
     var aktifController = ViewContext.RouteData.Values["controller"]?.ToString();
     // aktif tema ayarlar sayfasından kaydedilen değer, filtre bunu her sayfada ViewData'ya koyuyor
     var aktifTema = ViewData["AktifTema"] as string ?? TemaSecenekleri.Varsayilan;
     // gece modu açık mı, o da aynı filtre üzerinden her sayfada geliyor
     var koyuMu = ViewData["KoyuMu"] as bool? ?? false;
-    // sol menüdeki her controller'ın Index'i ana liste sayfası, geri kalan her action (detay, ekle, düzenle, rapor, sonuç girişi vb.) iç sayfa sayılıyor
+    // üst çubuktaki her controller'ın Index'i ana liste sayfası, geri kalan her action (detay, ekle, düzenle, rapor, sonuç girişi vb.) iç sayfa sayılıyor
     var aktifAction = ViewContext.RouteData.Values["action"]?.ToString();
     var icSayfaMi = !string.Equals(aktifAction, "Index", StringComparison.OrdinalIgnoreCase);
+    // birincil dörtlünün dışında kalan sayfalar, hem sağdaki "diğer" panelinde hem gizli komut paleti listesinde aynı diziden besleniyor
+    var ikincilMenu = new (string Controller, string Action, string Ikon, string Etiket)[]
+    {
+        ("Siniflar", "Index", "bi-diagram-3", "Sınıflar"),
+        ("Devamsizlik", "Index", "bi-calendar-x", "Devamsızlık"),
+        ("Odevler", "Index", "bi-journal-text", "Ödevler"),
+        ("Denemeler", "Index", "bi-clipboard-data", "Denemeler"),
+        ("Gorusmeler", "Index", "bi-chat-dots", "Görüşmeler"),
+        ("Hedefler", "Index", "bi-bullseye", "Hedefler"),
+        ("CalismaProgramlari", "Index", "bi-calendar-week", "Çalışma Programı"),
+        ("Konular", "Index", "bi-book", "Konu Takip"),
+        ("Gorevler", "Index", "bi-check2-square", "Görevler"),
+        ("Notlar", "Index", "bi-sticky", "Notlarım"),
+        ("Ayarlar", "Index", "bi-gear", "Ayarlar"),
+    };
+    // aktif sayfa bu on sayfadan biriyse "diğer" düğmesi de aktif görünsün diye
+    var ikincilAktifMi = ikincilMenu.Any(oge => oge.Controller == aktifController);
 }
 <!DOCTYPE html>
 <html lang="tr" data-theme="@aktifTema" data-mod="@(koyuMu ? "koyu" : "acik")" data-bs-theme="@(koyuMu ? "dark" : "light")">
@@ -23,29 +40,19 @@
 </head>
 <body>
     <div class="rp-govde">
-        <aside class="rp-sidebar">
-            <div class="rp-sidebar-baslik">
-                <i class="bi bi-mortarboard-fill"></i>
-                Mentoliz
-            </div>
-            @* her linkin sonundaki boş span sadece aktif olduğunda css ile görünüyor, sayfa değişince bu çizgi eski satırdan yeni satıra doğru kayarak taşınıyor *@
-            <ul class="rp-sidebar-menu">
-                <li><a class="@(aktifController == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Ana Sayfa<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Bugun" ? "active" : "")" asp-controller="Bugun" asp-action="Index"><i class="bi bi-calendar-check"></i> Bugün<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Takvim" ? "active" : "")" asp-controller="Takvim" asp-action="Index"><i class="bi bi-calendar3"></i> Takvim<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Ogrenciler" ? "active" : "")" asp-controller="Ogrenciler" asp-action="Index"><i class="bi bi-people"></i> Öğrenciler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Siniflar" ? "active" : "")" asp-controller="Siniflar" asp-action="Index"><i class="bi bi-diagram-3"></i> Sınıflar<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Odevler" ? "active" : "")" asp-controller="Odevler" asp-action="Index"><i class="bi bi-journal-text"></i> Ödevler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Denemeler" ? "active" : "")" asp-controller="Denemeler" asp-action="Index"><i class="bi bi-clipboard-data"></i> Denemeler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Gorusmeler" ? "active" : "")" asp-controller="Gorusmeler" asp-action="Index"><i class="bi bi-chat-dots"></i> Görüşmeler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Hedefler" ? "active" : "")" asp-controller="Hedefler" asp-action="Index"><i class="bi bi-bullseye"></i> Hedefler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "CalismaProgramlari" ? "active" : "")" asp-controller="CalismaProgramlari" asp-action="Index"><i class="bi bi-calendar-week"></i> Çalışma Programı<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Konular" ? "active" : "")" asp-controller="Konular" asp-action="Index"><i class="bi bi-book"></i> Konu Takip<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Gorevler" ? "active" : "")" asp-controller="Gorevler" asp-action="Index"><i class="bi bi-check2-square"></i> Görevler<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Notlar" ? "active" : "")" asp-controller="Notlar" asp-action="Index"><i class="bi bi-sticky"></i> Notlarım<span class="rp-aktif-cizgi"></span></a></li>
-                <li><a class="@(aktifController == "Ayarlar" ? "active" : "")" asp-controller="Ayarlar" asp-action="Index"><i class="bi bi-gear"></i> Ayarlar<span class="rp-aktif-cizgi"></span></a></li>
-            </ul>
-        </aside>
+        <header class="rp-ustcubuk">
+            <a class="rp-marka" asp-controller="Home" asp-action="Index"><i class="bi bi-mortarboard-fill"></i> Mentoliz</a>
+            <nav class="rp-ustmenu" aria-label="Ana gezinme">
+                @* her linkin sonundaki boş span sadece aktif olduğunda css ile görünüyor, sayfa değişince bu çizgi eski konumdan yeni konuma doğru kayarak taşınıyor *@
+                <a class="rp-nav-link @(aktifController == "Home" ? "active" : "")" aria-current="@(aktifController == "Home" ? "page" : null)" asp-controller="Home" asp-action="Index"><i class="bi bi-house-door"></i> Ana Sayfa<span class="rp-aktif-cizgi"></span></a>
+                <a class="rp-nav-link @(aktifController == "Bugun" ? "active" : "")" aria-current="@(aktifController == "Bugun" ? "page" : null)" asp-controller="Bugun" asp-action="Index"><i class="bi bi-calendar-check"></i> Bugün<span class="rp-aktif-cizgi"></span></a>
+                <a class="rp-nav-link @(aktifController == "Ogrenciler" ? "active" : "")" aria-current="@(aktifController == "Ogrenciler" ? "page" : null)" asp-controller="Ogrenciler" asp-action="Index"><i class="bi bi-people"></i> Öğrenciler<span class="rp-aktif-cizgi"></span></a>
+                <a class="rp-nav-link @(aktifController == "Takvim" ? "active" : "")" aria-current="@(aktifController == "Takvim" ? "page" : null)" asp-controller="Takvim" asp-action="Index"><i class="bi bi-calendar3"></i> Takvim<span class="rp-aktif-cizgi"></span></a>
+                <button type="button" class="rp-ustmenu-diger @(ikincilAktifMi ? "active" : "")" data-bs-toggle="offcanvas" data-bs-target="#rp-diger-sayfalar" aria-controls="rp-diger-sayfalar">
+                    <i class="bi bi-grid-3x3-gap"></i> Diğer
+                </button>
+            </nav>
+        </header>
         <div class="rp-icerik-alani">
             <header class="rp-topbar">
                 <div class="d-flex align-items-center gap-2">
@@ -56,7 +63,7 @@
                     <h1>@ViewData["Title"]</h1>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="rp-geri-dugmesi" id="komut-paleti-ac" aria-label="Öğrenci ara veya sayfaya git" title="Ara (Ctrl+K)"><i class="bi bi-search"></i></button>
+                    <button type="button" class="rp-geri-dugmesi rp-komut-ac" id="komut-paleti-ac" aria-label="Öğrenci ara veya sayfaya git" title="Ara (Ctrl+K)"><i class="bi bi-search"></i></button>
                     @* geçici: arkadaşlara test amaçlı gönderirken örnek veri yükleyip silebilmek için, teslimden önce kaldırılacak *@
                     <form method="post" asp-controller="Ayarlar" asp-action="DemoVeriYukle" data-onay="Mevcut öğrenci, sınıf, deneme, ödev ve not verilerinin yerine örnek test verisi yüklenecek. Devam edilsin mi?">
                         <input type="hidden" name="donusUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
@@ -83,19 +90,57 @@
                 @RenderBody()
             </main>
         </div>
+
+        @* dar ekranda üst menüdeki linkler gizleniyor, gezinme buradan yapılıyor, tek elle erişilebilsin diye ekranın altında sabit duruyor *@
+        <nav class="rp-altsekme" aria-label="Mobil gezinme">
+            <a class="rp-nav-link @(aktifController == "Bugun" ? "active" : "")" aria-current="@(aktifController == "Bugun" ? "page" : null)" asp-controller="Bugun" asp-action="Index"><i class="bi bi-calendar-check"></i><span>Bugün</span></a>
+            <a class="rp-nav-link @(aktifController == "Ogrenciler" ? "active" : "")" aria-current="@(aktifController == "Ogrenciler" ? "page" : null)" asp-controller="Ogrenciler" asp-action="Index"><i class="bi bi-people"></i><span>Öğrenciler</span></a>
+            <button type="button" class="rp-altsekme-orta rp-komut-ac" id="komut-paleti-ac-mobil" aria-label="Öğrenci ara veya sayfaya git"><i class="bi bi-search"></i></button>
+            <a class="rp-nav-link @(aktifController == "Takvim" ? "active" : "")" aria-current="@(aktifController == "Takvim" ? "page" : null)" asp-controller="Takvim" asp-action="Index"><i class="bi bi-calendar3"></i><span>Takvim</span></a>
+            <button type="button" class="@(ikincilAktifMi ? "active" : "")" data-bs-toggle="offcanvas" data-bs-target="#rp-diger-sayfalar" aria-controls="rp-diger-sayfalar"><i class="bi bi-grid-3x3-gap"></i><span>Diğer</span></button>
+        </nav>
     </div>
 
-    @* komut paleti, ctrl+k veya üstteki büyüteç ile açılıyor, öğrenci arama ve sol menüdeki sayfalara hızlı geçiş için *@
+    @* birincil dörtlünün dışındaki sayfalar burada toplanıyor, hem üst çubuktaki hem alt sekmedeki "diğer" düğmesi bunu açıyor *@
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="rp-diger-sayfalar" aria-labelledby="rp-diger-baslik">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title h6 mb-0" id="rp-diger-baslik">Diğer Sayfalar</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Kapat"></button>
+        </div>
+        <div class="offcanvas-body pt-0">
+            <ul class="rp-diger-liste list-unstyled mb-0">
+                @foreach (var oge in ikincilMenu)
+                {
+                    <li><a class="@(aktifController == oge.Controller ? "active" : "")" aria-current="@(aktifController == oge.Controller ? "page" : null)" asp-controller="@oge.Controller" asp-action="@oge.Action"><i class="bi @oge.Ikon"></i> @oge.Etiket</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    @* komut paleti, ctrl+k veya arama düğmeleriyle açılıyor, öğrenci arama ve sayfalar arasında hızlı geçiş için *@
     <div id="komut-paleti-perde" class="rp-komut-paleti-perde d-none">
         <div class="rp-komut-paleti" role="dialog" aria-modal="true" aria-label="Ara">
             <div class="rp-komut-paleti-arama">
                 <i class="bi bi-search"></i>
-                <input type="text" id="komut-paleti-girdi" placeholder="Öğrenci ara veya sayfaya git..." autocomplete="off" />
+                <input type="text" id="komut-paleti-girdi" placeholder="Öğrenci ara veya sayfaya git..." autocomplete="off"
+                       role="combobox" aria-expanded="false" aria-controls="komut-paleti-sonuclar" aria-autocomplete="list" aria-label="Öğrenci ara veya sayfaya git" />
                 <kbd>Esc</kbd>
             </div>
-            <ul id="komut-paleti-sonuclar" class="rp-komut-paleti-sonuclar"></ul>
+            <ul id="komut-paleti-sonuclar" class="rp-komut-paleti-sonuclar" role="listbox" aria-label="Arama sonuçları"></ul>
         </div>
     </div>
+
+    @* komut paletinin sayfa kısayolları listesi buradan besleniyor, ekranda görünmüyor, sadece veri kaynağı *@
+    <ul class="rp-komut-sayfa-listesi d-none">
+        <li><a href="@Url.Action("Index", "Home")"><i class="bi bi-house-door"></i>Ana Sayfa</a></li>
+        <li><a href="@Url.Action("Index", "Bugun")"><i class="bi bi-calendar-check"></i>Bugün</a></li>
+        <li><a href="@Url.Action("Index", "Ogrenciler")"><i class="bi bi-people"></i>Öğrenciler</a></li>
+        <li><a href="@Url.Action("Index", "Takvim")"><i class="bi bi-calendar3"></i>Takvim</a></li>
+        @foreach (var oge in ikincilMenu)
+        {
+            <li><a href="@Url.Action(oge.Action, oge.Controller)"><i class="bi @oge.Ikon"></i>@oge.Etiket</a></li>
+        }
+    </ul>
 
     @* bildirimler burada, sağ üstte sabit konumda birikiyor *@
     <div id="rp-toast-alani" class="rp-toast-alani" aria-live="polite"></div>

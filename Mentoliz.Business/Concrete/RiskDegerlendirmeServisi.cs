@@ -1,5 +1,6 @@
 using Mentoliz.Business.Abstract;
 using Mentoliz.Business.Dto.Deneme;
+using Mentoliz.Business.Dto.Devamsizlik;
 using Mentoliz.Business.Dto.Gorev;
 using Mentoliz.Business.Dto.Gorusme;
 using Mentoliz.Business.Dto.Hedef;
@@ -9,14 +10,15 @@ using Mentoliz.Entities.Enums;
 
 namespace Mentoliz.Business.Concrete;
 
-// deneme netindeki düşüş, ödev aksaması, görüşme aralığı ve hedeften geri kalma tek bir risk puanında birleşiyor
+// deneme netindeki düşüş, ödev aksaması, görüşme aralığı, hedeften geri kalma ve devamsızlık tek bir risk puanında birleşiyor
 public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
 {
-    // dört etkenin toplam puana katkı ağırlıkları, toplamları bir ediyor
-    private const decimal NetTrendAgirligi = 0.35m;
-    private const decimal OdevAgirligi = 0.25m;
+    // beş etkenin toplam puana katkı ağırlıkları, toplamları bir ediyor
+    private const decimal NetTrendAgirligi = 0.30m;
+    private const decimal OdevAgirligi = 0.20m;
     private const decimal GorusmeAgirligi = 0.20m;
-    private const decimal HedefAgirligi = 0.20m;
+    private const decimal HedefAgirligi = 0.15m;
+    private const decimal DevamsizlikAgirligi = 0.15m;
 
     // bu puanın üzerindeki öğrenciler için otomatik görev açılıyor
     private const int YuksekRiskEsigi = 50;
@@ -30,6 +32,9 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
     // hedeften geride kalınan her net puana böyle yansıyor
     private const int HedefFarkiPuanCarpani = 5;
 
+    // son otuz gündeki her gelmeme puana böyle yansıyor, mazeretli devamsızlık risk sayılmıyor
+    private const int DevamsizlikBasinaPuan = 20;
+
     // otomatik açılan görevleri sonradan tanıyabilmek ve tekrar oluşturmamak için başlıkları bu önekle başlıyor
     private const string RiskGorevBasligiOnEki = "Risk uyarısı: ";
 
@@ -42,6 +47,7 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
     private readonly IGorusmeServisi _gorusmeServisi;
     private readonly IDenemeAnaliziServisi _denemeAnaliziServisi;
     private readonly IGorevServisi _gorevServisi;
+    private readonly IDevamsizlikServisi _devamsizlikServisi;
 
     public RiskDegerlendirmeServisi(
         IOgrenciServisi ogrenciServisi,
@@ -49,7 +55,8 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
         IHedefServisi hedefServisi,
         IGorusmeServisi gorusmeServisi,
         IDenemeAnaliziServisi denemeAnaliziServisi,
-        IGorevServisi gorevServisi)
+        IGorevServisi gorevServisi,
+        IDevamsizlikServisi devamsizlikServisi)
     {
         _ogrenciServisi = ogrenciServisi;
         _odevServisi = odevServisi;
@@ -57,15 +64,17 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
         _gorusmeServisi = gorusmeServisi;
         _denemeAnaliziServisi = denemeAnaliziServisi;
         _gorevServisi = gorevServisi;
+        _devamsizlikServisi = devamsizlikServisi;
     }
 
     public async Task<List<OgrenciRiskDTO>> DegerlendirAsync()
     {
         var aktifOgrenciler = await _ogrenciServisi.ListeleAsync(new OgrenciFiltreDTO { AktifMi = true });
 
-        // dört etkenin hepsi kurum genelinde tek seferde çekiliyor, öğrenci başına ayrı ayrı sorgu atmıyoruz
+        // beş etkenin hepsi kurum genelinde tek seferde çekiliyor, öğrenci başına ayrı ayrı sorgu atmıyoruz
         var netDegisimleri = await _denemeAnaliziServisi.TumOgrencilerNetDegisimleriniHesaplaAsync();
         var uzunSureGorusulmeyenler = await _gorusmeServisi.UzunSureGorusulmeyenleriListeleAsync();
+        var devamsizlikOzetleri = await _devamsizlikServisi.TumOgrencilerOzetiHesaplaAsync();
 
         var sonuc = new List<OgrenciRiskDTO>();
         foreach (var ogrenci in aktifOgrenciler)
@@ -74,17 +83,20 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
             var gorusmeBilgisi = uzunSureGorusulmeyenler.FirstOrDefault(g => g.OgrenciId == ogrenci.Id);
             var odevOzeti = await _odevServisi.OgrenciOzetiHesaplaAsync(ogrenci.Id);
             var hedefKarsilastirma = await _hedefServisi.HedefeUzaklikHesaplaAsync(ogrenci.Id);
+            var devamsizlikOzeti = devamsizlikOzetleri.FirstOrDefault(d => d.OgrenciId == ogrenci.Id);
 
             var netTrendPuani = NetTrendPuaniHesapla(netDegisim);
             var odevPuani = OdevPuaniHesapla(odevOzeti);
             var gorusmePuani = GorusmePuaniHesapla(gorusmeBilgisi);
             var hedefPuani = HedefPuaniHesapla(hedefKarsilastirma);
+            var devamsizlikPuani = DevamsizlikPuaniHesapla(devamsizlikOzeti);
 
             var toplamPuan = (int)Math.Round(
                 (netTrendPuani * NetTrendAgirligi) +
                 (odevPuani * OdevAgirligi) +
                 (gorusmePuani * GorusmeAgirligi) +
-                (hedefPuani * HedefAgirligi));
+                (hedefPuani * HedefAgirligi) +
+                (devamsizlikPuani * DevamsizlikAgirligi));
 
             sonuc.Add(new OgrenciRiskDTO
             {
@@ -94,7 +106,8 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
                 NetTrendPuani = netTrendPuani,
                 OdevPuani = odevPuani,
                 GorusmePuani = gorusmePuani,
-                HedefPuani = hedefPuani
+                HedefPuani = hedefPuani,
+                DevamsizlikPuani = devamsizlikPuani
             });
         }
 
@@ -141,6 +154,17 @@ public class RiskDegerlendirmeServisi : IRiskDegerlendirmeServisi
 
         var fark = hedefKarsilastirma.ToplamGuncelNet.Value - hedefKarsilastirma.ToplamHedefNet;
         return fark >= 0 ? 0 : Math.Min(100, (int)(Math.Abs(fark) * HedefFarkiPuanCarpani));
+    }
+
+    // mazeretsiz gelmeme sayısı arttıkça puan artıyor, mazeretli devamsızlık hiç puana katılmıyor, kayıt yoksa nötr
+    private static int DevamsizlikPuaniHesapla(OgrenciDevamsizlikOzetiDTO? devamsizlikOzeti)
+    {
+        if (devamsizlikOzeti is null || devamsizlikOzeti.GelmemeSayisi == 0)
+        {
+            return 0;
+        }
+
+        return Math.Min(100, devamsizlikOzeti.GelmemeSayisi * DevamsizlikBasinaPuan);
     }
 
     public async Task OtomatikGorevOlusturAsync(List<OgrenciRiskDTO> riskListesi)

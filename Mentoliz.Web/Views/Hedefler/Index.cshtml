@@ -4,6 +4,8 @@
     ViewData["Title"] = "Hedefler";
 }
 
+<p class="text-body-secondary small">Bir öğrencinin tek bir aktif hedefi (üniversite, bölüm, hedef net) olur ve zamanla deneme sonuçlarıyla karşılaştırılır. Sıralı ÖSYM tercih listesi için öğrenci detayındaki Tercihler sekmesine bakın.</p>
+
 <div class="rp-kart mb-3">
     <form method="get" asp-action="Index" class="row g-2 align-items-end">
         <div class="col-md-4">
@@ -44,7 +46,7 @@ else
                     <h2 class="h6 mb-1">@Model.AktifHedef.HedefUniversite</h2>
                     <div class="text-body-secondary small">@Model.AktifHedef.HedefBolum · @Model.AktifHedef.PuanTuru.GosterimAdi()</div>
                 </div>
-                <a asp-action="Duzenle" asp-route-id="@Model.AktifHedef.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                <a asp-action="Duzenle" asp-route-id="@Model.AktifHedef.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
             </div>
             <dl class="row mb-0 mt-3">
                 <dt class="col-sm-3">Hedef Sıralama</dt>
@@ -138,7 +140,7 @@ else
                                 <td>@gecmisHedef.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
                                 <td class="text-end">
                                     <form asp-action="Sil" asp-route-id="@gecmisHedef.Id" asp-route-ogrenciId="@Model.OgrenciId" method="post" class="d-inline" data-onay="Bu geçmiş hedefi silmek istediğinize emin misiniz?">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>

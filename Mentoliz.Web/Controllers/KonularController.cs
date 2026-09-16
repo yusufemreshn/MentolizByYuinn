@@ -131,6 +131,12 @@ public class KonularController : Controller
             Durum = durum
         });
 
+        // konu takip haritasında durum değiştirince sayfa tepeden yenilenmesin diye fetch ile gelen istekte json dönüyoruz, javascript kapalıysa form normal post edip sayfayı yeniliyor
+        if (string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal))
+        {
+            return Json(new { basarili = sonuc.Basarili, mesaj = sonuc.Basarili ? null : string.Join(" ", sonuc.HataMesajlari) });
+        }
+
         TempData[sonuc.Basarili ? "BasariMesaji" : "HataMesaji"] = sonuc.Basarili
             ? "Konu durumu güncellendi."
             : string.Join(" ", sonuc.HataMesajlari);

@@ -61,7 +61,7 @@ else
         </div>
     }
 
-    <div class="rp-kart">
+    <div class="rp-kart" id="konu-takip-haritasi">
         <h3 class="h6 mb-3">Konu Durumları</h3>
         @foreach (var dersGrubu in Model.Takipler.GroupBy(t => t.DersAdi))
         {
@@ -78,12 +78,12 @@ else
                             _ => "bg-secondary-subtle"
                         };
 
-                        <div class="p-2 rounded @arkaplanSinifi" style="min-width: 170px;">
+                        <div class="konu-durum-kutusu p-2 rounded @arkaplanSinifi" style="min-width: 170px;">
                             <div class="small fw-semibold mb-1">@takip.KonuAdi</div>
                             <form asp-action="DurumIsaretle" method="post">
                                 <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                                 <input type="hidden" name="konuId" value="@takip.KonuId" />
-                                <select name="durum" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <select name="durum" class="konu-durum-secim form-select form-select-sm">
                                     @foreach (var deger in Enum.GetValues<KonuTakipDurumu>())
                                     {
                                         if (deger == takip.Durum)
@@ -103,4 +103,8 @@ else
             </div>
         }
     </div>
+}
+
+@section Scripts {
+    <script src="~/js/konu-takip.js" asp-append-version="true"></script>
 }

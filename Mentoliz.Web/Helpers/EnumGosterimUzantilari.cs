@@ -101,6 +101,14 @@ public static class EnumGosterimUzantilari
         _ => oncelik.ToString()
     };
 
+    public static string GosterimAdi(this DevamsizlikDurumu durum) => durum switch
+    {
+        DevamsizlikDurumu.Geldi => "Geldi",
+        DevamsizlikDurumu.Gelmedi => "Gelmedi",
+        DevamsizlikDurumu.Mazeretli => "Mazeretli",
+        _ => durum.ToString()
+    };
+
     public static string GosterimAdi(this Gun gun) => gun switch
     {
         Gun.Pazartesi => "Pazartesi",

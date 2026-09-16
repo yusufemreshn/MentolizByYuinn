@@ -1,5 +1,6 @@
 using Mentoliz.Business.Dto.CalismaProgrami;
 using Mentoliz.Business.Dto.Deneme;
+using Mentoliz.Business.Dto.Devamsizlik;
 using Mentoliz.Business.Dto.Gorusme;
 using Mentoliz.Business.Dto.Hedef;
 using Mentoliz.Business.Dto.Konu;
@@ -51,4 +52,7 @@ public class OgrenciDetayViewModel
     public List<KonuDTO> ZayifKonuOnerileri { get; set; } = [];
 
     public List<OgrenciTercihiDTO> Tercihler { get; set; } = [];
+
+    // son otuz güne ait devamsızlık özeti, genel bilgiler sekmesinde gösteriliyor
+    public OgrenciDevamsizlikOzetiDTO DevamsizlikOzeti { get; set; } = new();
 }

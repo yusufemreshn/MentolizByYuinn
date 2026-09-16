@@ -7,7 +7,7 @@ public static class RiskAciklamaOlusturucu
 {
     public static string BaskinSebep(OgrenciRiskDTO risk)
     {
-        var enYuksek = new[] { risk.NetTrendPuani, risk.OdevPuani, risk.GorusmePuani, risk.HedefPuani }.Max();
+        var enYuksek = new[] { risk.NetTrendPuani, risk.OdevPuani, risk.GorusmePuani, risk.HedefPuani, risk.DevamsizlikPuani }.Max();
 
         if (enYuksek == 0)
         {
@@ -30,6 +30,11 @@ public static class RiskAciklamaOlusturucu
             return "uzun süredir görüşülmedi";
         }
 
-        return "hedeften geride";
+        if (risk.HedefPuani == enYuksek)
+        {
+            return "hedeften geride";
+        }
+
+        return "sık devamsızlık";
     }
 }

@@ -77,7 +77,7 @@
                             <td>@toplu.OdevSayisi</td>
                             <td class="text-end">
                                 <form asp-action="TopluAtamaSil" asp-route-id="@toplu.Id" method="post" class="d-inline" data-onay="Bu toplu atamayı silmek istediğinize emin misiniz? Öğrencilerin bireysel ödev kayıtları silinmez, sadece grup bağlantısı kalkar.">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                 </form>
                             </td>
                         </tr>
@@ -121,16 +121,25 @@ else
                         _ => "rp-rozet-notr"
                     };
 
+                    @* teslim tarihi geçmiş ama durum hâlâ verildiyse öğretmen güncellemeyi unutmuş olabilir, ayırt edilsin diye ayrı bir işaret koyuyoruz *@
+                    var guncellenmemisOlabilir = odev.Durum == OdevDurumu.Verildi && odev.SonTeslimTarihi.Date < DateTime.Today;
+
                     <tr>
                         <td>@odev.OgrenciAdSoyad</td>
                         <td>@odev.DersAdi</td>
                         <td>@odev.KonuBasligi</td>
                         <td>@odev.VerilisTarihi.ToString("dd.MM.yyyy")</td>
-                        <td>@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
-                        <td><span class="rp-rozet @rozetSinifi">@odev.Durum.GosterimAdi()</span></td>
-                        <td class="text-end">
-                            <form asp-action="DurumGuncelle" asp-route-id="@odev.Id" method="post" class="d-inline-flex align-items-center gap-1">
-                                <select name="yeniDurum" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                        <td>
+                            @odev.SonTeslimTarihi.ToString("dd.MM.yyyy")
+                            @if (guncellenmemisOlabilir)
+                            {
+                                <i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Teslim tarihi geçti ama durum hâlâ Verildi, güncellemeyi unutmuş olabilirsiniz."></i>
+                            }
+                        </td>
+                        <td>
+                            @* durumu hem ayrı bir rozetle hem yanındaki seçim kutusuyla iki kez göstermek yerine, rozet renginde tek bir seçim kutusu kullanıyoruz *@
+                            <form asp-action="DurumGuncelle" asp-route-id="@odev.Id" method="post">
+                                <select name="yeniDurum" class="form-select form-select-sm rp-rozet-secim @rozetSinifi" onchange="this.form.submit()">
                                     @foreach (var deger in Enum.GetValues<OdevDurumu>())
                                     {
                                         if (deger == odev.Durum)
@@ -144,9 +153,11 @@ else
                                     }
                                 </select>
                             </form>
-                            <a asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                             <form asp-action="Sil" asp-route-id="@odev.Id" method="post" class="d-inline" data-onay="Bu ödevi silmek istediğinize emin misiniz?">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>

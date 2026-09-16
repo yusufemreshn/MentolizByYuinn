@@ -4,125 +4,102 @@
     ViewData["Title"] = "Ana Sayfa";
 }
 
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="rp-kart d-flex align-items-center gap-3">
-            <div class="rp-kart-ikon"><i class="bi bi-people"></i></div>
-            <div>
-                <div class="rp-kart-baslik">Toplam Öğrenci</div>
-                <div class="rp-kart-deger">@Model.ToplamOgrenciSayisi</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="rp-kart d-flex align-items-center gap-3">
-            <div class="rp-kart-ikon"><i class="bi bi-chat-dots"></i></div>
-            <div>
-                <div class="rp-kart-baslik">Bugün Görüşülecek</div>
-                <div class="rp-kart-deger">@Model.BugunGorusulecekSayisi</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="rp-kart d-flex align-items-center gap-3">
-            <div class="rp-kart-ikon rp-kart-ikon-uyari"><i class="bi bi-exclamation-triangle"></i></div>
-            <div>
-                <div class="rp-kart-baslik">Geciken Ödev</div>
-                <div class="rp-kart-deger">@Model.GecikenOdevSayisi</div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="rp-kart d-flex align-items-center gap-3">
-            <div class="rp-kart-ikon"><i class="bi bi-clipboard-data"></i></div>
-            <div>
-                <div class="rp-kart-baslik">Bu Hafta Girilen Deneme</div>
-                <div class="rp-kart-deger">@Model.BuHaftaGirilenDenemeSayisi</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-@if (Model.DikkatGerektirenOgrenciler.Count > 0)
-{
-    <div class="rp-kart mb-3">
-        <h2 class="h6 mb-3"><i class="bi bi-shield-exclamation text-danger"></i> Bu Hafta Dikkat Gerektiren Öğrenciler</h2>
-        <div class="row g-2">
-            @foreach (var risk in Model.DikkatGerektirenOgrenciler)
-            {
-                var yuksekRiskliMi = risk.RiskPuani >= 50;
-                <div class="col-md-6 col-xl-3">
-                    <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@risk.OgrenciId" class="rp-risk-karti text-decoration-none">
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <span class="fw-semibold text-body">@risk.OgrenciAdSoyad</span>
-                            <span class="rp-rozet @(yuksekRiskliMi ? "rp-rozet-tehlike" : "rp-rozet-uyari")">@risk.RiskPuani</span>
-                        </div>
-                        <div class="rp-risk-sebep">@RiskAciklamaOlusturucu.BaskinSebep(risk)</div>
-                    </a>
-                </div>
-            }
-        </div>
-    </div>
-}
-
 <div class="row g-3 mb-3 align-items-stretch">
     <div class="col-lg-7">
         <div class="rp-kart h-100">
-            <h2 class="h6 mb-3">Yaklaşan Son Teslim Tarihleri</h2>
-            @if (Model.YaklasanTeslimTarihleri.Count == 0)
-            {
-                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-check", Mesaj = "Yaklaşan teslim tarihi yok.", EylemBaslik = "Ödev Ekle", EylemUrl = Url.Action("Ekle", "Odevler") })" />
-            }
-            else
-            {
-                <div class="rp-tablo-sarici">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Öğrenci</th>
-                                <th>Ders</th>
-                                <th class="rp-sayisal">Son Teslim</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var odev in Model.YaklasanTeslimTarihleri)
-                            {
-                                <tr>
-                                    <td>@odev.OgrenciAdSoyad</td>
-                                    <td>@odev.DersAdi</td>
-                                    <td class="rp-sayisal">@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="rp-kart h-100">
-            <h2 class="h6 mb-3">Bugün Görüşülecek Öğrenciler</h2>
+            <div class="rp-gundem-cumle">@GundemOzetiOlusturucu.Cumle(Model.BugunkuGorevler.Count, Model.GecikenOdevSayisi)</div>
+            <div class="rp-gundem-alt">@DateTime.Now.ToString("d MMMM dddd", new System.Globalization.CultureInfo("tr-TR"))</div>
             @if (Model.BugunkuGorevler.Count == 0)
             {
-                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-chat-dots", Mesaj = "Bugün için planlanmış görüşme yok.", EylemBaslik = "Görev Ekle", EylemUrl = Url.Action("Ekle", "Gorevler") })" />
+                <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-check", Mesaj = "Bugün için planlanmış görüşme yok.", EylemBaslik = "Görev Ekle", EylemUrl = Url.Action("Ekle", "Gorevler") })" />
             }
             else
             {
-                <ul class="list-unstyled d-flex flex-column gap-3 mb-0">
+                <ul class="rp-gundem-liste list-unstyled mb-0">
                     @foreach (var gorev in Model.BugunkuGorevler)
                     {
-                        <li class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="fw-semibold">@gorev.OgrenciAdSoyad</div>
-                                <div class="text-body-secondary small">@gorev.Baslik</div>
-                            </div>
-                            <a asp-controller="Gorevler" asp-action="Duzenle" asp-route-id="@gorev.Id" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-right"></i></a>
+                        @* görev başlığı çoğunlukla "adsoyad ile görüş" şeklinde otomatik üretildiği için, ismi ikinci kez tekrar etmek yerine önceliği gösteriyoruz *@
+                        var oncelikSinifi = gorev.Oncelik switch
+                        {
+                            GorevOnceligi.Yuksek => "rp-rozet-tehlike",
+                            GorevOnceligi.Normal => "rp-rozet-uyari",
+                            _ => "rp-rozet-notr"
+                        };
+                        <li>
+                            <a asp-controller="Gorevler" asp-action="Duzenle" asp-route-id="@gorev.Id">
+                                <span class="fw-semibold">@(string.IsNullOrWhiteSpace(gorev.OgrenciAdSoyad) ? gorev.Baslik : gorev.OgrenciAdSoyad)</span>
+                                <span class="rp-rozet @oncelikSinifi">@gorev.Oncelik.GosterimAdi()</span>
+                            </a>
                         </li>
                     }
                 </ul>
             }
         </div>
     </div>
+    <div class="col-lg-5 d-flex flex-column gap-3">
+        <div class="rp-kart d-flex align-items-center justify-content-between flex-grow-1">
+            <span class="rp-kart-baslik mb-0">Toplam Öğrenci</span>
+            <span class="rp-kart-deger">@Model.ToplamOgrenciSayisi</span>
+        </div>
+        <div class="rp-kart d-flex align-items-center justify-content-between flex-grow-1">
+            <span class="rp-kart-baslik mb-0">Bu Hafta Girilen Deneme</span>
+            <span class="rp-kart-deger">@Model.BuHaftaGirilenDenemeSayisi</span>
+        </div>
+    </div>
+</div>
+
+@if (Model.DikkatGerektirenOgrenciler.Count > 0)
+{
+    <div class="mb-3">
+        <h2 class="h6 mb-1"><i class="bi bi-shield-exclamation text-danger"></i> Bu Hafta Dikkat Gerektiren Öğrenciler</h2>
+        <div class="text-body-secondary small mb-2">Puan 0-100 arası; deneme netindeki düşüş, ödev aksaması, görüşme aralığı, hedeften geri kalma ve devamsızlığın ağırlıklı toplamı. 50 ve üzeri otomatik görüşme görevi açar, üzerine gelince kırılım görünür.</div>
+        <div class="rp-not-seridi">
+            @foreach (var risk in Model.DikkatGerektirenOgrenciler)
+            {
+                var yuksekRiskliMi = risk.RiskPuani >= 50;
+                var kirilimMetni = $"Net trend {risk.NetTrendPuani} · Ödev {risk.OdevPuani} · Görüşme {risk.GorusmePuani} · Hedef {risk.HedefPuani} · Devamsızlık {risk.DevamsizlikPuani}";
+                <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@risk.OgrenciId" class="rp-not-karti @(yuksekRiskliMi ? "rp-not-karti-yuksek" : "")" title="@kirilimMetni">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <span class="fw-semibold text-body">@risk.OgrenciAdSoyad</span>
+                        <span class="rp-rozet @(yuksekRiskliMi ? "rp-rozet-tehlike" : "rp-rozet-uyari")">@risk.RiskPuani</span>
+                    </div>
+                    <div class="rp-risk-sebep">@RiskAciklamaOlusturucu.BaskinSebep(risk)</div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<div class="rp-kart mb-3">
+    <h2 class="h6 mb-3">Yaklaşan Son Teslim Tarihleri</h2>
+    @if (Model.YaklasanTeslimTarihleri.Count == 0)
+    {
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-journal-check", Mesaj = "Yaklaşan teslim tarihi yok.", EylemBaslik = "Ödev Ekle", EylemUrl = Url.Action("Ekle", "Odevler") })" />
+    }
+    else
+    {
+        <div class="rp-tablo-sarici">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Öğrenci</th>
+                        <th>Ders</th>
+                        <th class="rp-sayisal">Son Teslim</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var odev in Model.YaklasanTeslimTarihleri)
+                    {
+                        <tr>
+                            <td>@odev.OgrenciAdSoyad</td>
+                            <td>@odev.DersAdi</td>
+                            <td class="rp-sayisal">@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
 
 @if (Model.UzunSureGorusulmeyenler.Count > 0)

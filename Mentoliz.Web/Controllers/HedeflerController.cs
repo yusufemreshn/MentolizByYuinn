@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Mentoliz.Business.Abstract;
 using Mentoliz.Business.Dto.Hedef;
 using Mentoliz.Business.Dto.Ogrenci;
+using Mentoliz.Entities.Enums;
 using Mentoliz.Web.ViewModels;
 
 namespace Mentoliz.Web.Controllers;
@@ -48,9 +49,19 @@ public class HedeflerController : Controller
 
         var dersler = await _dersServisi.ListeleAsync();
 
+        // öğrencinin bulunduğu alana göre en uygun puan türünü baştan seçili getiriyoruz, formu hiç değiştirmeden yanlış puan türüyle kaydedilmesin diye
+        var onerilenPuanTuru = ogrenci.Alan switch
+        {
+            Alan.Sayisal => PuanTuru.Say,
+            Alan.EsitAgirlik => PuanTuru.Ea,
+            Alan.Sozel => PuanTuru.Soz,
+            Alan.Dil => PuanTuru.Dil,
+            _ => PuanTuru.Say
+        };
+
         var model = new HedefFormViewModel
         {
-            Hedef = new HedefKaydetDTO { OgrenciId = ogrenciId },
+            Hedef = new HedefKaydetDTO { OgrenciId = ogrenciId, PuanTuru = onerilenPuanTuru },
             OgrenciAdSoyad = ogrenci.AdSoyad,
             DersNetSatirlari = dersler.Select(d => new HedefDersNetiSatiriViewModel { DersId = d.Id, DersAdi = d.Ad }).ToList()
         };

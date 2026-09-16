@@ -1,0 +1,69 @@
+@model DevamsizlikIndexViewModel
+
+@{
+    ViewData["Title"] = "Devamsızlık";
+}
+
+<div class="rp-kart mb-3">
+    <form method="get" asp-action="Index" class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Sınıf</label>
+            <select name="sinifId" class="form-select" asp-items="@(new SelectList(Model.SinifSecenekleri, "Id", "Ad", Model.SinifId))">
+                <option value="">Sınıf seçin</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Tarih</label>
+            <input type="date" name="tarih" value="@Model.Tarih.ToString("yyyy-MM-dd")" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-primary w-100">Göster</button>
+        </div>
+    </form>
+</div>
+
+@if (!Model.SinifId.HasValue || Model.Gun is null)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-calendar-x", Mesaj = "Devamsızlık işaretlemek için önce bir sınıf ve tarih seçin." })" />
+    </div>
+}
+else if (Model.Gun.Ogrenciler.Count == 0)
+{
+    <div class="rp-kart">
+        <partial name="_BosDurum" model="@(new BosDurumViewModel { Ikon = "bi-people", Mesaj = "Bu sınıfta aktif öğrenci yok." })" />
+    </div>
+}
+else
+{
+    @* satır bazlı kaydetme fetch ile yapılıyor, sayfada tek bir doğrulama token'ı yeterli *@
+    <form id="devamsizlik-token-formu" class="d-none">@Html.AntiForgeryToken()</form>
+
+    <div class="rp-kart" id="devamsizlik-listesi" data-sinif-id="@Model.SinifId" data-tarih="@Model.Tarih.ToString("yyyy-MM-dd")">
+        <ul class="list-unstyled mb-0">
+            @foreach (var ogrenci in Model.Gun.Ogrenciler)
+            {
+                <li class="d-flex justify-content-between align-items-center border-bottom py-2 devamsizlik-satiri" data-ogrenci-id="@ogrenci.OgrenciId">
+                    <a asp-controller="Ogrenciler" asp-action="Detay" asp-route-id="@ogrenci.OgrenciId">@ogrenci.OgrenciAdSoyad</a>
+                    <select class="devamsizlik-durum-secim form-select form-select-sm" style="width: auto;">
+                        @foreach (var deger in Enum.GetValues<DevamsizlikDurumu>())
+                        {
+                            if (deger == ogrenci.Durum)
+                            {
+                                <option value="@deger" selected>@deger.GosterimAdi()</option>
+                            }
+                            else
+                            {
+                                <option value="@deger">@deger.GosterimAdi()</option>
+                            }
+                        }
+                    </select>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@section Scripts {
+    <script src="~/js/devamsizlik.js" asp-append-version="true"></script>
+}

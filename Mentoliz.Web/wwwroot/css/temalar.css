@@ -7,7 +7,7 @@
   --rp-yaricap-lg: 0.75rem;
   /* kart gibi yüzeylerin hover rengi, açık modda zemin rengiyle aynı, aşağıda gece modu için ayrıca bir basamak açık tanımlanıyor */
   --rp-yuzey-hover: var(--rp-arkaplan);
-  /* ana renk hem dolgu (sidebar, buton zemini, beyaz yazıyla birlikte) hem de yazı/ikon rengi olarak kullanılıyor, bu iki rol gece modunda çakışıyor: dolgu koyu kalmalı, yazı açık olmalı. o yüzden yazı/ikon kullanımı için ayrı bir token var, açık modda ana renkle birebir aynı */
+  /* ana renk hem dolgu (üst çubuk, buton zemini, beyaz yazıyla birlikte) hem de yazı/ikon rengi olarak kullanılıyor, bu iki rol gece modunda çakışıyor: dolgu koyu kalmalı, yazı açık olmalı. o yüzden yazı/ikon kullanımı için ayrı bir token var, açık modda ana renkle birebir aynı */
   --rp-ana-renk-metin: var(--rp-ana-renk);
 }
 
@@ -98,7 +98,7 @@
 }
 
 /* açık modun koyu ana renkleri koyu yüzeyde metin veya ikon olarak kullanılınca neredeyse kayboluyordu, o yüzden sadece yazı/ikon rolü için tema başına açıklaştırılmış bir karşılık tanımlıyoruz */
-/* sidebar ve buton zemini gibi dolgu kullanımları hâlâ orijinal --rp-ana-renk'i kullanıyor, bu yüzden onlar burada değişmiyor */
+/* üst çubuk ve buton zemini gibi dolgu kullanımları hâlâ orijinal --rp-ana-renk'i kullanıyor, bu yüzden onlar burada değişmiyor */
 [data-theme="lacivert"][data-mod="koyu"] {
   --rp-ana-renk-metin: #7aa2e3;
   --rp-vurgu: #4d9be6;

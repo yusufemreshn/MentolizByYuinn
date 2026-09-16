@@ -165,9 +165,9 @@
                                                     <div class="text-body-secondary">@satir.OgretmenAdi</div>
                                                 }
                                                 <div class="mt-1">
-                                                    <a asp-action="DersProgramiDuzenle" asp-route-id="@satir.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                                    <a asp-action="DersProgramiDuzenle" asp-route-id="@satir.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                                                     <form asp-action="DersProgramiSil" asp-route-id="@satir.Id" asp-route-sinifId="@Model.Sinif.Id" method="post" class="d-inline" data-onay="Bu ders saatini silmek istediğinize emin misiniz?">
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                                     </form>
                                                 </div>
                                             </div>

@@ -41,6 +41,7 @@ public static class IsKatmaniServisKayitlari
         services.AddScoped<IAyarServisi, AyarServisi>();
         services.AddScoped<IYedeklemeServisi, YedeklemeServisi>();
         services.AddScoped<IDemoVeriServisi, DemoVeriServisi>();
+        services.AddScoped<IDevamsizlikServisi, DevamsizlikServisi>();
 
         return services;
     }

@@ -94,8 +94,22 @@
                 <dd class="col-sm-9">@(Model.Ogrenci.OkulAdi ?? "-")</dd>
                 <dt class="col-sm-3">Kayıt Tarihi</dt>
                 <dd class="col-sm-9">@Model.Ogrenci.KayitTarihi.ToString("dd.MM.yyyy")</dd>
+                <dt class="col-sm-3">Devamsızlık (Son 30 Gün)</dt>
+                <dd class="col-sm-9">
+                    @if (Model.DevamsizlikOzeti.GelmemeSayisi == 0 && Model.DevamsizlikOzeti.MazeretliSayisi == 0)
+                    {
+                        <span class="text-body-secondary">Devamsızlık yok</span>
+                    }
+                    else
+                    {
+                        <span>@Model.DevamsizlikOzeti.GelmemeSayisi gelmedi, @Model.DevamsizlikOzeti.MazeretliSayisi mazeretli</span>
+                    }
+                </dd>
                 <dt class="col-sm-3">Notlar</dt>
-                <dd class="col-sm-9">@(Model.Ogrenci.GenelNotlar ?? "-")</dd>
+                <dd class="col-sm-9">
+                    @(Model.Ogrenci.GenelNotlar ?? "-")
+                    <div class="text-warning-emphasis small mt-1">Bu not Veli Raporu'nda "Öğretmen Yorumu" olarak aynen görünür.</div>
+                </dd>
             </dl>
         </div>
     </div>
@@ -255,9 +269,9 @@
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <a asp-action="IstisnaDuzenle" asp-route-id="@istisna.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="IstisnaDuzenle" asp-route-id="@istisna.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                                     <form asp-action="IstisnaSil" asp-route-id="@istisna.Id" asp-route-ogrenciId="@Model.Ogrenci.Id" method="post" class="d-inline" data-onay="Bu program istisnasını silmek istediğinize emin misiniz?">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -298,7 +312,7 @@
 
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3 class="h6 mb-0">Ödev Listesi</h3>
-            <a asp-controller="Odevler" asp-action="Ekle" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Ödev Ekle</a>
+            <a asp-controller="Odevler" asp-action="Ekle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Ödev Ekle</a>
         </div>
         @if (Model.Odevler.Count == 0)
         {
@@ -332,11 +346,19 @@
                                 _ => "rp-rozet-notr"
                             };
 
+                            var guncellenmemisOlabilir = odev.Durum == OdevDurumu.Verildi && odev.SonTeslimTarihi.Date < DateTime.Today;
+
                             <tr>
                                 <td>@odev.DersAdi</td>
                                 <td>@odev.KonuBasligi</td>
                                 <td>@odev.VerilisTarihi.ToString("dd.MM.yyyy")</td>
-                                <td>@odev.SonTeslimTarihi.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    @odev.SonTeslimTarihi.ToString("dd.MM.yyyy")
+                                    @if (guncellenmemisOlabilir)
+                                    {
+                                        <i class="bi bi-exclamation-triangle-fill text-warning ms-1" title="Teslim tarihi geçti ama durum hâlâ Verildi, güncellemeyi unutmuş olabilirsiniz."></i>
+                                    }
+                                </td>
                                 <td>
                                     <form asp-controller="Odevler" asp-action="DurumGuncelle" asp-route-id="@odev.Id" asp-route-donusUrl="@(Url.Action("Detay", "Ogrenciler", new { id = Model.Ogrenci.Id }) + "#sekme-odevler")" method="post">
                                         <select name="yeniDurum" class="form-select form-select-sm rp-rozet-secim @rozetSinifi" onchange="this.form.submit()">
@@ -355,7 +377,7 @@
                                     </form>
                                 </td>
                                 <td class="text-end">
-                                    <a asp-controller="Odevler" asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <a asp-controller="Odevler" asp-action="Duzenle" asp-route-id="@odev.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                                 </td>
                             </tr>
                         }
@@ -510,7 +532,7 @@
                                     <span class="text-body-secondary small ms-2">@gorusme.Sure dk</span>
                                 }
                             </div>
-                            <a asp-controller="Gorusmeler" asp-action="Duzenle" asp-route-id="@gorusme.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a asp-controller="Gorusmeler" asp-action="Duzenle" asp-route-id="@gorusme.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                         </div>
                         <div class="fw-semibold">@gorusme.Konu</div>
                         <div class="text-body-secondary small mt-1">@gorusme.Notlar</div>
@@ -528,6 +550,7 @@
         }
     </div>
     <div class="tab-pane fade" id="sekme-hedefler">
+        <p class="text-body-secondary small">Tek bir aktif hedef (üniversite, bölüm, hedef net) tutulur ve zamanla deneme sonuçlarıyla karşılaştırılır. Sıralı tercih listesi için Tercihler sekmesine bakın.</p>
         @if (Model.AktifHedef is null)
         {
             <div class="d-flex justify-content-end mb-3">
@@ -646,6 +669,7 @@
         }
     </div>
     <div class="tab-pane fade" id="sekme-tercihler">
+        <p class="text-body-secondary small">Öğrencinin ÖSYM'ye gireceği sıralı tercih listesi, karşılaştırma amaçlı değil. Tek bir hedefe göre net takibi için Hedefler sekmesine bakın.</p>
         <div class="d-flex justify-content-end mb-3">
             <a asp-action="TercihEkle" asp-route-ogrenciId="@Model.Ogrenci.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-plus-lg"></i> Tercih Ekle</a>
         </div>
@@ -677,9 +701,9 @@
                                 <td>@(tercih.TabanPuan?.ToString("0.##") ?? "-")</td>
                                 <td>@(tercih.Notlar ?? "-")</td>
                                 <td class="text-end">
-                                    <a asp-action="TercihDuzenle" asp-route-id="@tercih.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                                    <a asp-action="TercihDuzenle" asp-route-id="@tercih.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                                     <form asp-action="TercihSil" asp-route-id="@tercih.Id" asp-route-ogrenciId="@Model.Ogrenci.Id" method="post" class="d-inline" data-onay="Bu tercihi silmek istediğinize emin misiniz?">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>

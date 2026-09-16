@@ -26,6 +26,7 @@ public class OgrencilerController : Controller
     private readonly IZamanTuneliServisi _zamanTuneliServisi;
     private readonly IDonemDegerlendirmeServisi _donemDegerlendirmeServisi;
     private readonly IOgrenciTercihiServisi _ogrenciTercihiServisi;
+    private readonly IDevamsizlikServisi _devamsizlikServisi;
 
     // zaman tüneli sekmesinde en fazla bu kadar kayıt gösteriliyor
     private const int ZamanTuneliAdedi = 40;
@@ -47,7 +48,8 @@ public class OgrencilerController : Controller
         IVeliIletisimServisi veliIletisimServisi,
         IZamanTuneliServisi zamanTuneliServisi,
         IDonemDegerlendirmeServisi donemDegerlendirmeServisi,
-        IOgrenciTercihiServisi ogrenciTercihiServisi)
+        IOgrenciTercihiServisi ogrenciTercihiServisi,
+        IDevamsizlikServisi devamsizlikServisi)
     {
         _ogrenciServisi = ogrenciServisi;
         _sinifServisi = sinifServisi;
@@ -63,6 +65,7 @@ public class OgrencilerController : Controller
         _zamanTuneliServisi = zamanTuneliServisi;
         _donemDegerlendirmeServisi = donemDegerlendirmeServisi;
         _ogrenciTercihiServisi = ogrenciTercihiServisi;
+        _devamsizlikServisi = devamsizlikServisi;
     }
 
     public async Task<IActionResult> Index(string? arama, int? sinifId, bool? aktifMi)
@@ -114,7 +117,8 @@ public class OgrencilerController : Controller
             KonuIlerlemeleri = await _konuServisi.DersBazliIlerlemeHesaplaAsync(id),
             ZamanTuneli = await _zamanTuneliServisi.OlusturAsync(id, ZamanTuneliAdedi),
             ZayifKonuOnerileri = await _konuServisi.ZayifKonuOnerileriHesaplaAsync(id),
-            Tercihler = await _ogrenciTercihiServisi.ListeleAsync(id)
+            Tercihler = await _ogrenciTercihiServisi.ListeleAsync(id),
+            DevamsizlikOzeti = await _devamsizlikServisi.OgrenciOzetiHesaplaAsync(id)
         };
 
         return View(model);

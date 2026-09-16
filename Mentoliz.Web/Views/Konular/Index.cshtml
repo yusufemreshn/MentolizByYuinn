@@ -61,9 +61,9 @@ else
                             }
                         </td>
                         <td class="text-end">
-                            <a asp-action="Duzenle" asp-route-id="@konu.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a asp-action="Duzenle" asp-route-id="@konu.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                             <form asp-action="Sil" asp-route-id="@konu.Id" method="post" class="d-inline" data-onay="Bu konuyu silmek istediğinize emin misiniz?">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>

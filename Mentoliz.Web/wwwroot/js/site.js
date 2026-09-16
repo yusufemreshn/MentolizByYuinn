@@ -127,12 +127,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// sol menüde sekmeler arası geçiş, tarayıcının view transitions api'si sayfalar arası yükseklik farkında pencereyi küçültüp büyütüyordu, burada kendi elimizle kontrol ediyoruz
+// üst menüde ve alt sekme çubuğunda sayfalar arası geçiş, tarayıcının view transitions api'si sayfalar arası yükseklik farkında pencereyi küçültüp büyütüyordu, burada kendi elimizle kontrol ediyoruz
 (function () {
   var ONCEKI_LINK_ANAHTARI = "mentoliz-onceki-menu-href";
   var hareketAzaltilsinMi = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var icerik = document.querySelector(".rp-sayfa-icerigi");
-  var aktifLink = document.querySelector(".rp-sidebar-menu a.active");
+  // kayan aktif çizgi sadece üst menüde var, alt sekme çubuğu kendi renk değişimiyle yetiniyor
+  var aktifLink = document.querySelector(".rp-ustmenu a.active");
   var aktifCizgi = aktifLink ? aktifLink.querySelector(".rp-aktif-cizgi") : null;
 
   if (hareketAzaltilsinMi) {
@@ -143,12 +144,12 @@ document.addEventListener("DOMContentLoaded", function () {
   var oncekiHref = sessionStorage.getItem(ONCEKI_LINK_ANAHTARI);
   sessionStorage.removeItem(ONCEKI_LINK_ANAHTARI);
 
-  // aktif çizgi eski satırla yeni satır arasındaki farkı css değişkenine yazıp animasyonu tetikliyor, animation transition'dan farklı olarak bir önceki kareyi beklemeden direkt o farktan başlayıp kayıyor
+  // aktif çizgi eski linkle yeni link arasındaki yatay farkı css değişkenine yazıp animasyonu tetikliyor, animation transition'dan farklı olarak bir önceki kareyi beklemeden direkt o farktan başlayıp kayıyor
   if (aktifCizgi && oncekiHref) {
-    var oncekiLink = document.querySelector('.rp-sidebar-menu a[href="' + oncekiHref + '"]');
+    var oncekiLink = document.querySelector('.rp-ustmenu a[href="' + oncekiHref + '"]');
     if (oncekiLink && oncekiLink !== aktifLink) {
-      var fark = oncekiLink.offsetTop - aktifLink.offsetTop;
-      aktifCizgi.style.setProperty("--rp-cizgi-eski-y", fark + "px");
+      var fark = oncekiLink.offsetLeft - aktifLink.offsetLeft;
+      aktifCizgi.style.setProperty("--rp-cizgi-eski-x", fark + "px");
       aktifCizgi.classList.add("rp-cizgi-tasin");
     }
   }
@@ -161,8 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.documentElement.style.overflowY = eskiTasmaDegeri;
   }, 340);
 
-  // menüden başka bir sayfaya geçerken önce içerik solup gitsin, hemen ardından gerçek sayfa değişimi tetiklensin
-  document.querySelectorAll(".rp-sidebar-menu a").forEach(function (link) {
+  // üst menüden, alt sekme çubuğundan veya diğer panelinden başka bir sayfaya geçerken önce içerik solup gitsin, hemen ardından gerçek sayfa değişimi tetiklensin
+  document.querySelectorAll(".rp-nav-link, .rp-diger-liste a").forEach(function (link) {
     link.addEventListener("click", function (olay) {
       // yeni sekmede açma, ctrl/cmd ile tıklama gibi durumlara karışmıyoruz, tarayıcı kendi işini yapsın
       if (olay.defaultPrevented || olay.button !== 0 || olay.ctrlKey || olay.metaKey || olay.shiftKey || olay.altKey) {

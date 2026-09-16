@@ -78,67 +78,83 @@ a {
 
 /* ---- genel sayfa iskeleti ---- */
 
-.rp-govde {
-  display: flex;
-  min-height: 100vh;
+:root {
+  /* üst çubuğun yüksekliği, başlık çubuğunun sticky konumu bu değere göre hesaplanıyor */
+  --rp-ustcubuk-yukseklik: 3.5rem;
+  /* alt sekme çubuğunun yüksekliği, sadece dar ekranda kullanılıyor */
+  --rp-altsekme-yukseklik: 4.25rem;
 }
 
-.rp-sidebar {
-  width: 260px;
-  flex-shrink: 0;
+.rp-govde {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* eskiden sol sabit menüydü, artık marka ve birincil sayfalar üstte tek satırda duruyor */
+.rp-ustcubuk {
+  min-height: var(--rp-ustcubuk-yukseklik);
   background-color: var(--rp-ana-renk);
   color: #ffffff;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0 1.25rem;
   position: sticky;
   top: 0;
-  height: 100vh;
-  overflow-y: auto;
+  z-index: 20;
 }
 
-.rp-sidebar-baslik {
-  padding: 1.25rem 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-.rp-sidebar-menu {
-  list-style: none;
-  margin: 0;
-  padding: 0.75rem 0;
-  flex-grow: 1;
-}
-
-.rp-sidebar-menu a {
+.rp-marka {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.6rem 1.5rem;
-  color: rgba(255, 255, 255, 0.82);
+  gap: 0.5rem;
+  color: #ffffff;
   text-decoration: none;
-  font-size: 0.92rem;
-  border-left: 3px solid transparent;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  position: relative;
+  font-weight: 600;
+  font-size: 1.05rem;
+  flex-shrink: 0;
 }
 
-.rp-sidebar-menu a:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+.rp-ustmenu {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+  position: relative;
+  flex-grow: 1;
+  overflow-x: auto;
+  /* taşarsa kaydırılabilsin ama koyu zeminde kaydırma çubuğu göze batmasın diye gizliyoruz */
+  scrollbar-width: none;
+}
+
+.rp-ustmenu::-webkit-scrollbar {
+  display: none;
+}
+
+.rp-ustmenu a,
+.rp-ustmenu-diger {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.9rem;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  position: relative;
+  border: none;
+  background: none;
+}
+
+.rp-ustmenu a:hover,
+.rp-ustmenu-diger:hover {
   color: #ffffff;
 }
 
-/* aktif menü öğesinin rengi burada, soldaki çizgiyi artık ayrı bir eleman çiziyor çünkü kayma animasyonu için elemanın kendisi lazım, border ile o hareket yapılamıyor */
-.rp-sidebar-menu a.active {
-  background-color: rgba(255, 255, 255, 0.12);
+.rp-ustmenu a.active,
+.rp-ustmenu-diger.active {
   color: #ffffff;
   font-weight: 600;
-}
-
-.rp-sidebar-menu i {
-  font-size: 1.05rem;
-  width: 1.2rem;
-  text-align: center;
 }
 
 /* varsayılan halde gizli, sadece aktif linkin içindeki görünür ve isimlendirilir */
@@ -146,28 +162,28 @@ a {
   display: none;
 }
 
-.rp-sidebar-menu a.active .rp-aktif-cizgi {
+.rp-ustmenu a.active .rp-aktif-cizgi {
   display: block;
   position: absolute;
-  top: 0;
+  left: 0.9rem;
+  right: 0.9rem;
   bottom: 0;
-  left: -3px;
-  width: 3px;
+  height: 2px;
   background-color: var(--rp-vurgu);
-  border-radius: 0 3px 3px 0;
+  border-radius: 2px 2px 0 0;
 }
 
-/* js önceki sayfadaki satırla şimdiki satır arasındaki farkı --rp-cizgi-eski-y değişkenine yazıp bu sınıfı ekliyor, animation da kendiliğinden o farktan sıfıra doğru kayıyor */
-.rp-sidebar-menu a.active .rp-aktif-cizgi.rp-cizgi-tasin {
+/* js önceki sayfadaki linkle şimdiki link arasındaki yatay farkı --rp-cizgi-eski-x değişkenine yazıp bu sınıfı ekliyor, animation da kendiliğinden o farktan sıfıra doğru kayıyor */
+.rp-ustmenu a.active .rp-aktif-cizgi.rp-cizgi-tasin {
   animation: rp-cizgi-kayma-anim 0.28s cubic-bezier(0.34, 1.2, 0.4, 1) both;
 }
 
 @keyframes rp-cizgi-kayma-anim {
   from {
-    transform: translateY(var(--rp-cizgi-eski-y, 0px));
+    transform: translateX(var(--rp-cizgi-eski-x, 0px));
   }
   to {
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
@@ -186,7 +202,7 @@ a {
   align-items: center;
   justify-content: space-between;
   position: sticky;
-  top: 0;
+  top: var(--rp-ustcubuk-yukseklik);
   z-index: 10;
 }
 
@@ -270,17 +286,122 @@ a {
   flex-grow: 1;
 }
 
-/* dar ekranlarda sabit sidebar yerine üstte basit bir menü çubuğuna geçiyoruz */
+/* dar ekranda alt sekme çubuğu devreye girene kadar gizli duruyor */
+.rp-altsekme {
+  display: none;
+}
+
+/* dar ekranda üst çubuktaki sayfa linkleri kalabalık ediyor, onların yerini alttaki sabit sekme çubuğu alıyor */
 @media (max-width: 900px) {
-  .rp-govde {
-    flex-direction: column;
+  .rp-ustmenu a,
+  .rp-ustmenu-diger {
+    display: none;
   }
 
-  .rp-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
+  .rp-sayfa-icerigi {
+    /* içerik en altta sabit sekme çubuğunun arkasında kalmasın diye */
+    padding-bottom: calc(1.75rem + var(--rp-altsekme-yukseklik));
   }
+
+  .rp-altsekme {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: var(--rp-altsekme-yukseklik);
+    background-color: var(--rp-yuzey);
+    border-top: 1px solid var(--rp-kenarlik);
+    box-shadow: var(--rp-golge-2);
+    z-index: 30;
+  }
+
+  .rp-altsekme a,
+  .rp-altsekme button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    border: none;
+    background: none;
+    color: var(--rp-ikincil-metin);
+    font-size: 0.68rem;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .rp-altsekme a.active,
+  .rp-altsekme button.active {
+    color: var(--rp-ana-renk-metin);
+    font-weight: 600;
+  }
+
+  .rp-altsekme i {
+    font-size: 1.15rem;
+  }
+
+  /* ortadaki arama düğmesi diğerlerinden taşıp öne çıkıyor, tek elle en kolay erişilen nokta burası */
+  .rp-altsekme-orta {
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: 50%;
+    background-color: var(--rp-ana-renk) !important;
+    color: #ffffff !important;
+    margin-top: -1.7rem;
+    justify-content: center;
+    box-shadow: var(--rp-golge-2);
+  }
+
+  .rp-altsekme-orta i {
+    font-size: 1.3rem;
+  }
+}
+
+/* ---- diğer sayfalar paneli (offcanvas) ---- */
+
+/* bootstrap'ın kendi offcanvas zemini temadan bağımsız sabit beyaz/siyah geliyor, burada temaya bağlıyoruz */
+.offcanvas {
+  background-color: var(--rp-yuzey);
+  color: var(--rp-metin);
+}
+
+.rp-diger-liste li {
+  border-bottom: 1px solid var(--rp-kenarlik);
+}
+
+.rp-diger-liste li:last-child {
+  border-bottom: none;
+}
+
+.rp-diger-liste a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 0.2rem;
+  color: var(--rp-metin);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.rp-diger-liste a:hover,
+.rp-diger-liste a.active {
+  color: var(--rp-ana-renk-metin);
+}
+
+.rp-diger-liste a.active {
+  font-weight: 600;
+}
+
+.rp-diger-liste i {
+  width: 1.2rem;
+  text-align: center;
+  color: var(--rp-ikincil-metin);
+}
+
+.rp-diger-liste a.active i {
+  color: var(--rp-ana-renk-metin);
 }
 
 /* ---- kart bileşeni ---- */
@@ -366,20 +487,77 @@ a {
   color: var(--rp-tehlike);
 }
 
-/* ---- dikkat gerektiren öğrenci kartı ---- */
+/* ---- ana sayfa gündem kartı ---- */
 
-.rp-risk-karti {
-  display: block;
-  border: 1px solid var(--rp-kenarlik);
-  border-radius: var(--rp-yaricap-sm);
-  padding: 0.65rem 0.8rem;
-  background-color: var(--rp-arkaplan);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+.rp-gundem-cumle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.35;
 }
 
-.rp-risk-karti:hover {
-  border-color: var(--rp-tehlike);
-  background-color: var(--rp-yuzey-hover);
+.rp-gundem-alt {
+  font-size: 0.8rem;
+  color: var(--rp-ikincil-metin);
+  text-transform: capitalize;
+  margin-bottom: 1rem;
+}
+
+.rp-gundem-liste {
+  display: flex;
+  flex-direction: column;
+}
+
+.rp-gundem-liste li {
+  border-top: 1px solid var(--rp-kenarlik);
+}
+
+.rp-gundem-liste li:first-child {
+  border-top: none;
+}
+
+.rp-gundem-liste a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.1rem;
+  color: var(--rp-metin);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.rp-gundem-liste a:hover {
+  color: var(--rp-ana-renk-metin);
+}
+
+/* ---- dikkat gerektiren öğrenci şeridi ---- */
+
+/* dikey liste yerine yan yana kayan not kağıtları, sol kenarlık risk seviyesine göre renkleniyor */
+.rp-not-seridi {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+}
+
+.rp-not-karti {
+  flex: 0 0 220px;
+  display: block;
+  background-color: var(--rp-yuzey);
+  border: 1px solid var(--rp-kenarlik);
+  border-left: 3px solid var(--rp-uyari);
+  border-radius: var(--rp-yaricap-sm);
+  padding: 0.7rem 0.9rem;
+  text-decoration: none;
+  transition: box-shadow 0.15s ease;
+}
+
+.rp-not-karti:hover {
+  box-shadow: var(--rp-golge-2);
+}
+
+.rp-not-karti-yuksek {
+  border-left-color: var(--rp-tehlike);
 }
 
 .rp-risk-sebep {
@@ -394,7 +572,9 @@ a {
   background-color: var(--rp-yuzey);
   border: 1px solid var(--rp-kenarlik);
   border-radius: var(--rp-yaricap-md);
-  overflow: hidden;
+  /* çok sütunlu tablolar (deneme sonuç girişi, çalışma programı gibi) dar ekranda veriyi kaybetmesin diye yatayda kaydırılabiliyor */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .rp-tablo-sarici table {
@@ -404,9 +584,10 @@ a {
   --bs-table-color: var(--rp-metin);
 }
 
+/* başlık satırı artık gri bir kutu değil, cetvel çizgisi gibi tek bir alt çizgiyle ayrılıyor */
 .rp-tablo-sarici thead th {
-  background-color: var(--rp-arkaplan);
-  border-bottom: 1px solid var(--rp-kenarlik);
+  background-color: transparent;
+  border-bottom: 2px solid var(--rp-ana-renk-metin);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -465,6 +646,44 @@ a {
   --bs-btn-hover-border-color: var(--rp-tehlike);
   --bs-btn-active-bg: var(--rp-tehlike);
   --bs-btn-active-border-color: var(--rp-tehlike);
+}
+
+/* ---- sekme stili ---- */
+
+/* bootstrap'ın kutulu sekmesi yerine üst menüdeki gibi ince bir alt çizgiyle aktif sekmeyi gösteriyoruz */
+.nav-tabs {
+  border-bottom-color: var(--rp-kenarlik);
+}
+
+.nav-tabs .nav-link {
+  color: var(--rp-ikincil-metin);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  font-size: 0.9rem;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--rp-ana-renk-metin);
+  border-color: transparent;
+  isolation: auto;
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--rp-ana-renk-metin);
+  background: none;
+  border-color: transparent transparent var(--rp-ana-renk-metin);
+  font-weight: 600;
+}
+
+.nav-pills .nav-link {
+  color: var(--rp-ikincil-metin);
+  font-size: 0.88rem;
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--rp-ana-renk);
+  color: #ffffff;
 }
 
 /* ---- rozet stili ---- */
@@ -949,9 +1168,20 @@ a {
 .rp-takvim-oge-gorev i { color: var(--rp-ikincil-metin); }
 
 .rp-takvim-fazla {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
   font-size: 0.7rem;
   color: var(--rp-ikincil-metin);
   padding: 0 0.35rem;
+  cursor: pointer;
+}
+
+.rp-takvim-fazla:hover {
+  color: var(--rp-ana-renk-metin);
+  text-decoration: underline;
 }
 
 @media (max-width: 900px) {

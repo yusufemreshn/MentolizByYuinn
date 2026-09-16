@@ -35,6 +35,7 @@ public class MentolizDbContext : DbContext
     public DbSet<Not> Notlar => Set<Not>();
     public DbSet<Ayar> Ayarlar => Set<Ayar>();
     public DbSet<OgrenciTercihi> Tercihler => Set<OgrenciTercihi>();
+    public DbSet<OgrenciDevamsizlik> Devamsizliklar => Set<OgrenciDevamsizlik>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -1,15 +1,16 @@
-// ctrl+k veya üstteki büyüteç ile açılan hızlı arama paleti, öğrenci arıyor ve sol menüdeki sayfalara götürüyor
+// ctrl+k veya arama düğmeleriyle açılan hızlı arama paleti, öğrenci arıyor ve sayfalar arasında hızlı geçiş yaptırıyor
 (function () {
   var perde = document.getElementById("komut-paleti-perde");
   var girdi = document.getElementById("komut-paleti-girdi");
   var sonuclarEl = document.getElementById("komut-paleti-sonuclar");
-  var acButonu = document.getElementById("komut-paleti-ac");
+  // hem üst çubuktaki büyüteç hem alt sekme çubuğundaki ortadaki düğme bu paleti açıyor
+  var acButonlari = document.querySelectorAll(".rp-komut-ac");
   if (!perde || !girdi || !sonuclarEl) {
     return;
   }
 
-  // sayfa kısayolları sol menüden kendiliğinden toplanıyor, ayrı bir liste elde tutmaya gerek kalmıyor
-  var sayfaKisayollari = Array.prototype.map.call(document.querySelectorAll(".rp-sidebar-menu a"), function (a) {
+  // sayfa kısayolları layout'taki gizli listeden kendiliğinden toplanıyor, ayrı bir liste elde tutmaya gerek kalmıyor
+  var sayfaKisayollari = Array.prototype.map.call(document.querySelectorAll(".rp-komut-sayfa-listesi a"), function (a) {
     var ikonEl = a.querySelector("i");
     return {
       baslik: a.textContent.trim(),
@@ -23,9 +24,19 @@
   var aramaZamanlayici = null;
 
   function ac() {
+    // "diğer" paneli açık kalmışsa komut paletiyle üst üste binmesin diye önce onu kapatıyoruz
+    var digerPaneli = document.getElementById("rp-diger-sayfalar");
+    if (digerPaneli && window.bootstrap) {
+      var digerOrnek = window.bootstrap.Offcanvas.getInstance(digerPaneli);
+      if (digerOrnek) {
+        digerOrnek.hide();
+      }
+    }
+
     perde.classList.remove("d-none");
+    girdi.setAttribute("aria-expanded", "true");
     girdi.value = "";
-    sonucGoster(sayfaKisayollari.slice(0, 8));
+    sonucGoster(sayfaKisayollari);
     window.setTimeout(function () {
       girdi.focus();
     }, 0);
@@ -33,6 +44,7 @@
 
   function kapat() {
     perde.classList.add("d-none");
+    girdi.setAttribute("aria-expanded", "false");
   }
 
   function sonucGoster(ogeler) {
@@ -50,6 +62,9 @@
     ogeler.forEach(function (oge, index) {
       var satir = document.createElement("li");
       satir.className = "rp-komut-paleti-satir";
+      satir.id = "komut-paleti-satir-" + index;
+      satir.setAttribute("role", "option");
+      satir.setAttribute("aria-selected", "false");
       satir.innerHTML =
         '<i class="' + oge.ikon + '"></i>' +
         '<span class="rp-komut-paleti-satir-metin"><strong></strong><small></small></span>';
@@ -71,10 +86,13 @@
     var satirlar = sonuclarEl.querySelectorAll(".rp-komut-paleti-satir");
     satirlar.forEach(function (satir) {
       satir.classList.remove("rp-komut-paleti-secili");
+      satir.setAttribute("aria-selected", "false");
     });
     if (satirlar[index]) {
       satirlar[index].classList.add("rp-komut-paleti-secili");
+      satirlar[index].setAttribute("aria-selected", "true");
       satirlar[index].scrollIntoView({ block: "nearest" });
+      girdi.setAttribute("aria-activedescendant", satirlar[index].id);
       aktifIndex = index;
     }
   }
@@ -134,9 +152,9 @@
     }
   });
 
-  if (acButonu) {
-    acButonu.addEventListener("click", ac);
-  }
+  acButonlari.forEach(function (buton) {
+    buton.addEventListener("click", ac);
+  });
 
   // sayfanın herhangi bir yerinden ctrl+k (mac'te cmd+k) ile açılabiliyor
   document.addEventListener("keydown", function (olay) {

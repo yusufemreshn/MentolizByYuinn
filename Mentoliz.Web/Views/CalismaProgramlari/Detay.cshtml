@@ -59,10 +59,10 @@ else
                                                 <input type="hidden" name="calismaProgramiId" value="@Model.Program.Id" />
                                                 @* razor value="@boolIfadesi" yazılınca bunu html boolean attribute sanıp true için value="value", false için attribute'u hiç yazmıyor, o yüzden burada string'e çeviriyoruz *@
                                                 <input type="hidden" name="tamamlandiMi" value="@(!satir.TamamlandiMi ? "true" : "false")" />
-                                                <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                                                <button type="submit" class="btn btn-sm btn-outline-success" aria-label="Tamamlandı işaretle" title="Tamamlandı işaretle"><i class="bi bi-check-lg"></i></button>
                                             </form>
                                             <form asp-action="SatirSil" asp-route-id="@satir.Id" asp-route-calismaProgramiId="@Model.Program.Id" method="post" data-onay="Bu satırı silmek istediğinize emin misiniz?">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                                             </form>
                                         </div>
                                     </div>

@@ -59,4 +59,6 @@ public class Ogrenci : BaseEntity
     public ICollection<Gorev> Gorevler { get; set; } = new List<Gorev>();
 
     public ICollection<OgrenciTercihi> Tercihler { get; set; } = new List<OgrenciTercihi>();
+
+    public ICollection<OgrenciDevamsizlik> Devamsizliklar { get; set; } = new List<OgrenciDevamsizlik>();
 }

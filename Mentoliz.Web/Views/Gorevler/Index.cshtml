@@ -100,12 +100,12 @@ else
                             @if (!gorev.TamamlandiMi)
                             {
                                 <form asp-action="Tamamlandi" asp-route-id="@gorev.Id" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-outline-success" aria-label="Tamamlandı işaretle" title="Tamamlandı işaretle"><i class="bi bi-check-lg"></i></button>
                                 </form>
                             }
-                            <a asp-action="Duzenle" asp-route-id="@gorev.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a asp-action="Duzenle" asp-route-id="@gorev.Id" class="btn btn-sm btn-outline-primary" aria-label="Düzenle" title="Düzenle"><i class="bi bi-pencil"></i></a>
                             <form asp-action="Sil" asp-route-id="@gorev.Id" method="post" class="d-inline" data-onay="Bu görevi silmek istediğinize emin misiniz?">
-                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Sil" title="Sil"><i class="bi bi-trash"></i></button>
                             </form>
                         </td>
                     </tr>

@@ -45,11 +45,12 @@ public class OdevlerController : Controller
         return View(model);
     }
 
-    public async Task<IActionResult> Ekle()
+    public async Task<IActionResult> Ekle(int? ogrenciId)
     {
         var model = new OdevFormViewModel
         {
-            Odev = new OdevKaydetDTO { VerilisTarihi = DateTime.Today, SonTeslimTarihi = DateTime.Today, Durum = OdevDurumu.Verildi },
+            // öğrenci profilinden gelindiyse öğrenci baştan seçili gelsin diye
+            Odev = new OdevKaydetDTO { OgrenciId = ogrenciId ?? 0, VerilisTarihi = DateTime.Today, SonTeslimTarihi = DateTime.Today, Durum = OdevDurumu.Verildi },
             OgrenciSecenekleri = await _ogrenciServisi.ListeleAsync(new OgrenciFiltreDTO { AktifMi = true }),
             DersSecenekleri = await _dersServisi.ListeleAsync()
         };
